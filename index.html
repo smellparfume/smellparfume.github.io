@@ -597,37 +597,46 @@
     if (!data.consent) return toast('Отметьте согласие на обработку данных', true);
     store.set('client', { name: data.name.trim(), surname: data.surname.trim(), phone: data.phone, consent: true });
 
+    // Номер заказа создаём сразу на устройстве, чтобы не ждать сервер (он бывает медленным).
+    // Ждём ответ сервера не дольше 2,5 с: если он сообщит об ошибке (нет в наличии и т.п.) — покажем её,
+    // иначе открываем WhatsApp, а запись заказа в таблицу завершится в фоне.
+    const number = orderNumber();
     const items = state.cart.map(l => ({ id: l.id, ml: l.ml, qty: l.qty }));
+    const body = { action: 'order', number: number, items: items, name: data.name, surname: data.surname, phone: phone, promo: state.promo ? state.promo.code : '', comment: data.comment, consent: true };
     state.sending = true; renderCart();
-    let result = null, failure = '';
+    let result = null;
     if (API) {
-      try {
-        const r = await post({ action: 'order', items: items, name: data.name, surname: data.surname, phone: phone, promo: state.promo ? state.promo.code : '', comment: data.comment, consent: true });
-        if (r.ok) result = r; else failure = r.error;
-      } catch (e) { failure = 'network'; }
-    } else {
-      failure = 'network';
+      const request = fetch(API, { method: 'POST', body: JSON.stringify(body), keepalive: true }).then(r => r.json()).catch(() => null);
+      result = await Promise.race([request, new Promise(res => setTimeout(() => res('timeout'), 2500))]);
     }
     state.sending = false;
+    if (result && result !== 'timeout' && !result.ok) { renderCart(); return toast(result.error, true); }
 
-    if (failure && failure !== 'network') { renderCart(); return toast(failure, true); }
-
-    const lines = (result ? result.items : state.cart.map(l => { const p = state.byId[l.id]; return { name: p.brand + ' ' + p.name, ml: l.ml, qty: l.qty, price: unit(p) }; }))
-      .map((it, i) => `${i + 1}. ${it.name} — ${it.ml} мл${it.qty > 1 ? ' × ' + it.qty : ''} — ${money(it.price * it.ml * it.qty)}`);
-    const st = result ? result.subtotal : subtotal();
-    const disc = result ? result.discount : discount();
-    let text = `Здравствуйте! ${result ? 'Заказ № ' + result.number + ' с сайта' : 'Хочу оформить заказ'}:\n\n${lines.join('\n')}\n\n`;
-    if (disc) text += `Сумма: ${money(st)}\nПромокод ${result ? result.promo : state.promo.code}: −${money(disc)}\n`;
+    const lines = state.cart.map((l, i) => {
+      const p = state.byId[l.id];
+      return `${i + 1}. ${p.brand} ${p.name} — ${l.ml} мл${l.qty > 1 ? ' × ' + l.qty : ''} — ${money(unit(p) * l.ml * l.qty)}`;
+    });
+    const st = subtotal(), disc = discount();
+    let text = `Здравствуйте! Заказ № ${number} с сайта:\n\n${lines.join('\n')}\n\n`;
+    if (disc) text += `Сумма: ${money(st)}\nПромокод ${state.promo.code}: −${money(disc)}\n`;
     text += `Итого: ${money(st - disc)}\n\nИмя: ${data.name.trim()} ${data.surname.trim()}`.trim();
     if (data.comment.trim()) text += `\nКомментарий: ${data.comment.trim()}`;
     const url = `https://wa.me/${state.wa}?text=${encodeURIComponent(text)}`;
 
-    track('wa', '', result ? result.number : 'без номера');
+    track('wa', '', number);
     flushEvents();
     state.cart = []; state.promo = null; saveCart();
-    state.done = { number: result ? result.number : '—', url: url };
+    state.done = { number: number, url: url };
     renderCart();
     window.location.href = url;
+  }
+
+  // 5 символов без похожих букв/цифр (0/O, 1/I): легко продиктовать, совпадения практически исключены.
+  function orderNumber() {
+    const abc = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const rnd = new Uint32Array(5);
+    crypto.getRandomValues(rnd);
+    return Array.from(rnd, n => abc[n % abc.length]).join('');
   }
 
   function post(body) {

@@ -123,6 +123,9 @@
   .empty { text-align: center; color: var(--muted); padding: 40px 0; }
   .hint { font-size: 12px; color: var(--faint); }
   .bar-cell { position: relative; }
+  .sync { position: fixed; top: 12px; right: 12px; z-index: 300; background: var(--surface-2); border: 1px solid var(--line); color: var(--muted); font-size: 12px; padding: 6px 12px; border-radius: 999px; opacity: 0; transition: opacity .2s; pointer-events: none; }
+  .sync.show { opacity: 1; }
+  .sync.done { color: var(--ok); }
   .bar-cell i { position: absolute; left: 0; top: 50%; height: 6px; transform: translateY(-50%); background: rgba(201,169,110,.35); border-radius: 3px; }
 </style>
 </head>
@@ -130,6 +133,7 @@
 <div id="root"><div class="center" style="min-height:100vh"><div class="spinner"></div></div></div>
 <dialog id="dlg"><div class="modal" id="dlgBody"></div></dialog>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<div class="sync" id="sync" aria-live="polite"></div>
 <datalist id="productList"></datalist>
 <datalist id="brandList"></datalist>
 
@@ -178,10 +182,43 @@
   }
   async function reload(silent) {
     const r = await api('admin_data');
-    S.data = r;
-    prepare();
-    if (!silent) render();
+    applyData(r, silent);
   }
+
+  function applyData(d, silent) {
+    S.data = d;
+    prepare();
+    try { localStorage.setItem('spa_data', JSON.stringify(d)); } catch (e) { /* переполнено — работаем без кэша */ }
+    if (silent) return;
+    if ($('#dlg').open) S.renderAfterDialog = true; else render();
+  }
+
+  // Изменения применяются в интерфейсе сразу, а на сервер уходят в фоне.
+  // Ответ сервера несёт свежие данные — подставляем их, когда завершится последняя операция.
+  const sync = { pending: 0, data: null, failed: false };
+  function mutate(action, payload, okMsg) {
+    sync.pending++; showSync();
+    return api(action, Object.assign({ with_data: true }, payload))
+      .then(r => { if (r.data) sync.data = r.data; if (okMsg) toast(okMsg); return r; })
+      .catch(e => { sync.failed = true; toast('Не сохранилось: ' + e.message, true); })
+      .finally(() => {
+        sync.pending--;
+        if (!sync.pending) {
+          if (sync.failed) reload().catch(() => {});
+          else if (sync.data) applyData(sync.data);
+          sync.data = null; sync.failed = false;
+        }
+        showSync();
+      });
+  }
+  function showSync() {
+    const el = $('#sync');
+    el.textContent = sync.pending ? 'Синхронизация…' : 'Готово ✓';
+    el.className = 'sync show' + (sync.pending ? '' : ' done');
+    clearTimeout(showSync.t);
+    if (!sync.pending) showSync.t = setTimeout(() => { el.className = 'sync'; }, 1500);
+  }
+  window.addEventListener('beforeunload', e => { if (sync.pending) { e.preventDefault(); e.returnValue = ''; } });
   async function run(btn, fn, okMsg) {
     if (btn) { btn.disabled = true; btn.dataset.t = btn.textContent; btn.textContent = 'Сохраняем…'; }
     try {
@@ -232,7 +269,8 @@
         const r = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'login', password: e.target.password.value }) }).then(x => x.json());
         if (!r.ok) throw new Error(r.error);
         S.token = r.token; ls.set('token', r.token);
-        await start();
+        $('#root').innerHTML = '';
+        applyData(r.data);
       } catch (err) {
         $('#loginErr').textContent = err.message || 'Ошибка входа';
         btn.disabled = false;
@@ -241,14 +279,20 @@
   }
   function logout(expired) {
     if (S.token && !expired) api('logout').catch(() => {});
-    S.token = null; ls.set('token', null);
+    S.token = null; ls.set('token', null); ls.set('data', null);
     renderLogin(expired ? 'Сессия истекла — войдите заново' : '');
   }
 
   async function start() {
     if (!S.token) return renderLogin();
-    $('#root').innerHTML = '<div class="center" style="min-height:100vh"><div class="spinner"></div></div>';
-    try { await reload(); } catch (e) { if (S.token) renderLogin(e.message); }
+    // Сначала мгновенно показываем сохранённые данные, затем тихо подтягиваем свежие.
+    let cached = null;
+    try { cached = JSON.parse(ls.get('data') || 'null'); } catch (e) { /* битый кэш */ }
+    if (cached) applyData(cached);
+    else $('#root').innerHTML = '<div class="center" style="min-height:100vh"><div class="spinner"></div></div>';
+    sync.pending++; showSync();
+    try { await reload(); } catch (e) { if (S.token && !cached) renderLogin(e.message); }
+    finally { sync.pending--; showSync(); }
   }
 
   // ───────── Каркас ─────────
@@ -439,7 +483,11 @@
     if (act === 'edit') return orderEditor(S.data.orders.find(o => o.number === num));
     if (act === 'new' && !confirm('Вернуть заказ в «Новый»? Продажа будет удалена из аналитики.')) return;
     const status = { sold: 'Продано', cancel: 'Отменён', new: 'Новый' }[act];
-    await run(b, async () => { await api('order_status', { number: num, status: status }); await reload(); }, status === 'Продано' ? 'Продажа записана' : 'Статус обновлён');
+    const order = S.data.orders.find(o => o.number === num);
+    order.status = status;
+    render();
+    toast(status === 'Продано' ? `№ ${num} — продано` : `№ ${num} — ${status.toLowerCase()}`);
+    mutate('order_status', { number: num, status: status });
   }
 
   function findProductByLabel(label) {
@@ -506,12 +554,19 @@
         items: raw, discount: Number(box.querySelector('[name=discount]').value || 0), comment: box.querySelector('[name=comment]').value,
         phone: phoneRaw, name: box.querySelector('[name=name]').value, surname: box.querySelector('[name=surname]').value
       };
-      const ok = await run(e.target, async () => {
-        if (isNew) await api('manual_sale', Object.assign(payload, { date: box.querySelector('[name=date]').value }));
-        else await api('order_update', Object.assign(payload, { number: o.number }));
-        await reload(true);
-      }, isNew ? 'Продажа записана' : 'Заказ обновлён');
-      if (ok) { closeDlg(); render(); }
+      const subtotal = raw.reduce((s, it) => s + it.price * it.ml * it.qty, 0);
+      const items = raw.map(it => Object.assign({ name: S.data.byId[it.id].brand + ' ' + S.data.byId[it.id].name }, it));
+      if (isNew) {
+        const date = box.querySelector('[name=date]').value;
+        S.data.orders.unshift({ number: '…', date: date.replace('T', ' '), status: 'Продано', phone: normPhone(phoneRaw), name: payload.name, surname: payload.surname,
+          items: items, items_text: '', subtotal: subtotal, promo: '', discount: payload.discount, total: subtotal - payload.discount, comment: payload.comment, source: 'вручную' });
+        mutate('manual_sale', Object.assign(payload, { date: date }), 'Продажа записана');
+      } else {
+        Object.assign(o, { items: items, subtotal: subtotal, total: subtotal - payload.discount, discount: payload.discount, comment: payload.comment,
+          phone: normPhone(phoneRaw) || o.phone, name: payload.name, surname: payload.surname });
+        mutate('order_update', Object.assign(payload, { number: o.number }), 'Заказ обновлён');
+      }
+      closeDlg(); render();
     });
   }
 
@@ -551,9 +606,9 @@
     const sw = e.target.closest('[data-stock]');
     if (sw) {
       if (e.target.tagName !== 'INPUT') return;
-      const val = e.target.checked;
-      p.in_stock = val;
-      await run(null, () => api('save_product', { product: productPayload(p) }), val ? 'В наличии' : 'Нет в наличии');
+      p.in_stock = e.target.checked;
+      toast(p.in_stock ? 'В наличии' : 'Нет в наличии');
+      mutate('save_product', { product: productPayload(p) });
       return;
     }
     productEditor(p);
@@ -626,13 +681,23 @@
       };
       if (!payload.name.trim()) return toast('Укажите название', true);
       if (!payload.price) return toast('Укажите цену за мл', true);
-      const ok = await run(e.target, async () => { await api('save_product', { product: payload }); await reload(true); }, 'Сохранено — на сайте появится в течение пары минут');
-      if (ok) { closeDlg(); render(); }
+      const local = {
+        brand: payload.brand, name: payload.name, gender: payload.gender, raw_price: payload.price, price: payload.price, cost: payload.cost,
+        in_stock: payload.in_stock, sections: payload.sections, sale_percent_raw: payload.sale_percent, sale_until_raw: payload.sale_until,
+        sale_percent: payload.sale_percent, photo: payload.photo, description: payload.description, notes: payload.notes
+      };
+      if (isNew) S.data.products.push(Object.assign({ id: 'new-' + Date.now() }, local));
+      else Object.assign(p, local);
+      prepare();
+      mutate('save_product', { product: payload }, 'Сохранено — на сайте через пару минут');
+      closeDlg(); render();
     });
-    if (!isNew) $('#delProduct').addEventListener('click', async e => {
+    if (!isNew) $('#delProduct').addEventListener('click', () => {
       if (!confirm(`Удалить «${p.brand} ${p.name}» из каталога? Продажи в аналитике сохранятся.`)) return;
-      const ok = await run(e.target, async () => { await api('delete_product', { id: p.id }); await reload(true); }, 'Аромат удалён');
-      if (ok) { closeDlg(); render(); }
+      S.data.products = S.data.products.filter(x => x !== p);
+      prepare();
+      mutate('delete_product', { id: p.id }, 'Аромат удалён');
+      closeDlg(); render();
     });
   }
 
@@ -727,14 +792,20 @@
     $('#saveClient').addEventListener('click', async e => {
       const phone = normPhone(g('phone').value);
       if (!phone) return toast('Проверьте телефон', true);
-      const ok = await run(e.target, async () => { await api('save_client', { client: { phone: phone, name: g('name').value, surname: g('surname').value, notes: g('notes').value }, old_phone: isNew ? '' : c.phone }); await reload(true); }, 'Клиент сохранён');
-      if (ok) { closeDlg(); render(); }
+      if (S.data.clients.some(x => x.phone === phone && x.phone !== c.phone)) return toast('Клиент с таким номером уже есть', true);
+      const client = { phone: phone, name: g('name').value.trim(), surname: g('surname').value.trim(), notes: g('notes').value };
+      const existing = !isNew && S.data.clients.find(x => x.phone === c.phone);
+      if (existing) Object.assign(existing, client);
+      else S.data.clients.push(Object.assign({ created: new Date().toISOString().slice(0, 16).replace('T', ' '), source: 'вручную' }, client));
+      mutate('save_client', { client: client, old_phone: isNew ? '' : c.phone }, 'Клиент сохранён');
+      closeDlg(); render();
     });
     if (isNew) return;
-    $('#delClient').addEventListener('click', async e => {
+    $('#delClient').addEventListener('click', () => {
       if (!confirm('Удалить карточку клиента? Его продажи в аналитике останутся.')) return;
-      const ok = await run(e.target, async () => { await api('delete_client', { phone: c.phone }); await reload(true); }, 'Клиент удалён');
-      if (ok) { closeDlg(); render(); }
+      S.data.clients = S.data.clients.filter(x => x.phone !== c.phone);
+      mutate('delete_client', { phone: c.phone }, 'Клиент удалён');
+      closeDlg(); render();
     });
     $('#givePromo').addEventListener('click', async e => {
       const value = Number($('#gpValue').value), type = $('#gpType').value, days = Number($('#gpDays').value) || 14;
@@ -742,15 +813,11 @@
       const base = translit(c.name || 'SP').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 6) || 'SP';
       const code = base + value + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
       const until = daysAgo(-days);
-      const wa = window.open('', '_blank');
-      const ok = await run(e.target, async () => {
-        await api('save_promo', { promo: { code: code, type: type, value: value, until: until, limit: 1, phone: c.phone, active: true, comment: 'выдан клиенту ' + (c.name || '') } });
-        await reload(true);
-      }, 'Промокод создан: ' + code);
-      if (!ok) { if (wa) wa.close(); return; }
+      const promo = { code: code, type: type, value: value, until: until, limit: 1, used: 0, phone: c.phone, active: true, comment: 'выдан клиенту ' + (c.name || '') };
+      S.data.promos.push(promo);
+      mutate('save_promo', { promo: promo }, 'Промокод создан: ' + code);
       const text = promoMessage(c.name, code, type, value, until);
-      const url = `https://wa.me/${c.phone}?text=${encodeURIComponent(text)}`;
-      if (wa) wa.location = url; else location.href = url;
+      window.open(`https://wa.me/${c.phone}?text=${encodeURIComponent(text)}`, '_blank');
       closeDlg(); render();
     });
   }
@@ -787,7 +854,8 @@
       if (e.target.closest('[data-ptoggle]')) {
         if (e.target.tagName !== 'INPUT') return;
         p.active = e.target.checked;
-        await run(null, () => api('save_promo', { promo: p, old_code: p.code }), p.active ? 'Промокод включён' : 'Промокод выключен');
+        tr.style.opacity = p.active ? '' : '.5';
+        mutate('save_promo', { promo: p, old_code: p.code }, p.active ? 'Промокод включён' : 'Промокод выключен');
         return;
       }
       promoEditor(p);
@@ -820,14 +888,20 @@
     $('#savePromo').addEventListener('click', async e => {
       const phoneRaw = g('phone').value;
       if (phoneRaw && !normPhone(phoneRaw)) return toast('Проверьте телефон', true);
-      const promo = { code: g('code').value.trim().toUpperCase(), type: g('type').value, value: Number(g('value').value), until: g('until').value, limit: g('limit').value, phone: normPhone(phoneRaw), active: g('active').checked, comment: g('comment').value };
-      const ok = await run(e.target, async () => { await api('save_promo', { promo: promo, old_code: isNew ? '' : p.code }); await reload(true); }, 'Промокод сохранён');
-      if (ok) { closeDlg(); render(); }
+      const promo = { code: g('code').value.trim().toUpperCase().replace(/\s+/g, ''), type: g('type').value, value: Number(g('value').value), until: g('until').value, limit: g('limit').value === '' ? '' : Number(g('limit').value), phone: normPhone(phoneRaw), active: g('active').checked, comment: g('comment').value };
+      if (!/^[A-ZА-ЯЁ0-9_-]{3,30}$/.test(promo.code)) return toast('Код: 3–30 букв или цифр без пробелов', true);
+      if (!(promo.value > 0)) return toast('Укажите размер скидки', true);
+      if (S.data.promos.some(x => x.code === promo.code && x.code !== p.code)) return toast('Такой промокод уже есть', true);
+      if (isNew) S.data.promos.push(Object.assign({ used: 0 }, promo));
+      else Object.assign(S.data.promos.find(x => x.code === p.code), promo);
+      mutate('save_promo', { promo: promo, old_code: isNew ? '' : p.code }, 'Промокод сохранён');
+      closeDlg(); render();
     });
-    if (!isNew) $('#delPromo').addEventListener('click', async e => {
+    if (!isNew) $('#delPromo').addEventListener('click', () => {
       if (!confirm('Удалить промокод ' + p.code + '?')) return;
-      const ok = await run(e.target, async () => { await api('delete_promo', { code: p.code }); await reload(true); }, 'Удалено');
-      if (ok) { closeDlg(); render(); }
+      S.data.promos = S.data.promos.filter(x => x.code !== p.code);
+      mutate('delete_promo', { code: p.code }, 'Удалено');
+      closeDlg(); render();
     });
   }
 
@@ -875,7 +949,8 @@
       $$('#setForm [name]').forEach(i => { vals[i.name] = i.value.trim(); });
       vals.whatsapp = vals.whatsapp.replace(/\D/g, '');
       vals.instagram = vals.instagram.replace(/^@/, '');
-      await run(e.target, async () => { await api('save_settings', { settings: vals }); await reload(true); }, 'Сохранено');
+      Object.assign(S.data.settings, vals);
+      mutate('save_settings', { settings: vals }, 'Настройки сохранены');
     });
     const sec = $('#secList');
     $('#addSec').addEventListener('click', () => sec.insertAdjacentHTML('beforeend', secRow({ name: '', visible: true })));
@@ -887,14 +962,16 @@
     });
     $('#saveSec').addEventListener('click', async e => {
       const list = $$('.le', sec).map(r => ({ name: $('input[type=text]', r).value.trim(), visible: $('input[type=checkbox]', r).checked })).filter(x => x.name);
-      await run(e.target, async () => { await api('save_sections', { sections: list }); await reload(true); }, 'Разделы сохранены');
+      S.data.sections = list.map((s, i) => Object.assign({ order: i + 1 }, s));
+      mutate('save_sections', { sections: list }, 'Разделы сохранены');
     });
     const faq = $('#faqList');
     $('#addFaq').addEventListener('click', () => faq.insertAdjacentHTML('beforeend', faqRow({ q: '', a: '' })));
     faq.addEventListener('click', e => { if (e.target.closest('[data-del]')) e.target.closest('.fe').remove(); });
     $('#saveFaq').addEventListener('click', async e => {
       const list = $$('.fe', faq).map(r => ({ q: $('input', r).value.trim(), a: $('textarea', r).value.trim() })).filter(x => x.q);
-      await run(e.target, async () => { await api('save_faq', { faq: list }); await reload(true); }, 'Вопросы сохранены');
+      S.data.faq = list;
+      mutate('save_faq', { faq: list }, 'Вопросы сохранены');
     });
     $('#changePass').addEventListener('click', async e => {
       await run(e.target, async () => {
@@ -918,7 +995,10 @@
   function closeDlg() { $('#dlg').close(); }
   $('#dlg').addEventListener('click', e => { if (e.target === $('#dlg') || e.target.closest('[data-x]')) closeDlg(); });
   // Пересоздаём содержимое при каждом открытии, поэтому старые обработчики уходят вместе с ним.
-  $('#dlg').addEventListener('close', () => { $('#dlgBody').replaceWith(Object.assign(document.createElement('div'), { className: 'modal', id: 'dlgBody' })); });
+  $('#dlg').addEventListener('close', () => {
+    $('#dlgBody').replaceWith(Object.assign(document.createElement('div'), { className: 'modal', id: 'dlgBody' }));
+    if (S.renderAfterDialog) { S.renderAfterDialog = false; render(); }
+  });
 
   let tt;
   function toast(msg, err) {
