@@ -1,0 +1,37 @@
+{
+  "ok": true,
+  "demo": true,
+  "store": {
+    "store_name": "SMELL PARFUME",
+    "city": "Петропавловск",
+    "whatsapp": "77052113923",
+    "instagram": "smell_parfume_petro",
+    "ml_options": "3,5,10,15,18,20,30,35",
+    "tagline": "Парфюмерия на разлив в Петропавловске. Ниша и люкс от 3 мл.",
+    "about": "SMELL PARFUME — парфюмерия на разлив в Петропавловске.\n\nМы собрали более 100 люксовых и нишевых ароматов — Tom Ford, Louis Vuitton, Byredo, Parfums de Marly, Initio, By Kilian и другие. Вместо целого флакона вы покупаете столько, сколько нужно: от 3 мл, чтобы познакомиться с ароматом, до 35 мл, чтобы носить его каждый день.\n\nРазливаем аккуратно в чистые флаконы с атомайзером и помогаем подобрать аромат под вас или на подарок.",
+    "delivery": "По Петропавловску — самовывоз или доставка (условия уточняйте в WhatsApp). В другие города Казахстана отправляем после предоплаты.",
+    "metrika_id": ""
+  },
+  "sections": ["Хиты", "Новинки", "Для подарка"],
+  "faq": [
+    { "q": "Что такое разлив?", "a": "Мы аккуратно переливаем аромат из большого флакона в небольшой флакон с атомайзером. Вы платите только за нужный объём." },
+    { "q": "Какой объём выбрать?", "a": "3–5 мл — чтобы познакомиться с ароматом. 10–15 мл — на несколько недель. 20–35 мл — если аромат уже ваш." },
+    { "q": "Как сделать заказ?", "a": "Выберите аромат и объём, добавьте в корзину и нажмите «Оформить в WhatsApp»." }
+  ],
+  "products": [
+    { "id": "p108", "brand": "Giorgio Armani", "name": "Stronger With You Absolutely", "gender": "Мужской", "price": 1190, "sale_percent": 0, "sale_price": null, "sale_until": "", "in_stock": true, "sections": ["Хиты"], "photo": "", "description": "", "notes": "", "created": "2026-10-08" },
+    { "id": "p030", "brand": "Louis Vuitton", "name": "L'Immensité", "gender": "Мужской", "price": 790, "sale_percent": 0, "sale_price": null, "sale_until": "", "in_stock": true, "sections": ["Хиты"], "photo": "", "description": "", "notes": "", "created": "2026-10-08" },
+    { "id": "p001", "brand": "Acqua di Parma", "name": "Colonia Club", "gender": "Унисекс", "price": 650, "sale_percent": 0, "sale_price": null, "sale_until": "", "in_stock": true, "sections": ["Хиты"], "photo": "", "description": "", "notes": "", "created": "2026-10-08" },
+    { "id": "p048", "brand": "Tom Ford", "name": "Lost Cherry", "gender": "Унисекс", "price": 990, "sale_percent": 10, "sale_price": 891, "sale_until": "2026-10-31", "in_stock": true, "sections": ["Для подарка"], "photo": "", "description": "Сочная вишня, горький миндаль и тёплый ликёр — сладкий, но взрослый аромат.", "notes": "Верх: вишня, горький миндаль\nСердце: турецкая роза, жасмин\nБаза: перуанский бальзам, тонка, сандал", "created": "2026-10-08" },
+    { "id": "p056", "brand": "Tom Ford", "name": "Vanilla Sex", "gender": "Унисекс", "price": 990, "sale_percent": 0, "sale_price": null, "sale_until": "", "in_stock": true, "sections": ["Хиты"], "photo": "", "description": "", "notes": "", "created": "2026-10-08" },
+    { "id": "p093", "brand": "Maison Francis Kurkdjian", "name": "Baccarat Rouge 540 Extrait", "gender": "Унисекс", "price": 990, "sale_percent": 0, "sale_price": null, "sale_until": "", "in_stock": true, "sections": ["Для подарка"], "photo": "", "description": "", "notes": "", "created": "2026-10-08" },
+    { "id": "p017", "brand": "Parfums de Marly", "name": "Layton", "gender": "Мужской", "price": 790, "sale_percent": 0, "sale_price": null, "sale_until": "", "in_stock": true, "sections": [], "photo": "", "description": "", "notes": "", "created": "2026-10-08" },
+    { "id": "p091", "brand": "Byredo", "name": "Gypsy Water", "gender": "Унисекс", "price": 790, "sale_percent": 0, "sale_price": null, "sale_until": "", "in_stock": true, "sections": [], "photo": "", "description": "", "notes": "", "created": "2026-10-08" },
+    { "id": "p057", "brand": "Yves Saint Laurent", "name": "Libre", "gender": "Женский", "price": 790, "sale_percent": 0, "sale_price": null, "sale_until": "", "in_stock": true, "sections": [], "photo": "", "description": "", "notes": "", "created": "2026-10-08" },
+    { "id": "p042", "brand": "Chanel", "name": "Chance", "gender": "Женский", "price": 490, "sale_percent": 0, "sale_price": null, "sale_until": "", "in_stock": true, "sections": [], "photo": "", "description": "", "notes": "", "created": "2026-10-08" },
+    { "id": "p036", "brand": "Louis Vuitton", "name": "Spell on You", "gender": "Женский", "price": 790, "sale_percent": 0, "sale_price": null, "sale_until": "", "in_stock": true, "sections": [], "photo": "", "description": "", "notes": "", "created": "2026-10-08" },
+    { "id": "p101", "brand": "Dior", "name": "Sauvage", "gender": "Мужской", "price": 990, "sale_percent": 0, "sale_price": null, "sale_until": "", "in_stock": true, "sections": [], "photo": "", "description": "", "notes": "", "created": "2026-10-08" },
+    { "id": "p076", "brand": "Guerlain", "name": "Aqua Allegoria Mandarine Basilic", "gender": "Женский", "price": 790, "sale_percent": 0, "sale_price": null, "sale_until": "", "in_stock": true, "sections": ["Хиты"], "photo": "", "description": "", "notes": "", "created": "2026-10-08" },
+    { "id": "p012", "brand": "Nasomatto", "name": "Black Afgano", "gender": "Унисекс", "price": 990, "sale_percent": 0, "sale_price": null, "sale_until": "", "in_stock": false, "sections": [], "photo": "", "description": "", "notes": "", "created": "2026-10-08" }
+  ]
+}
