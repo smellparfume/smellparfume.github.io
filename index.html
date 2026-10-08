@@ -161,8 +161,16 @@
   .sum { display: grid; gap: 6px; font-size: 14px; }
   .sum div { display: flex; justify-content: space-between; }
   .sum .grand { font-size: 20px; font-weight: 700; padding-top: 8px; border-top: 1px solid var(--line); }
+  .deliv { display: grid; gap: 6px; }
+  .deliv > span { font-size: 13px; color: var(--muted); }
+  .deliv label { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 1px solid var(--line); border-radius: 12px; font-size: 14px; cursor: pointer; }
+  .deliv label:has(input:checked) { border-color: var(--accent); }
+  .deliv input { width: 18px; height: 18px; margin: 0; accent-color: var(--accent); flex: none; }
+  .deliv b { margin-left: auto; font-weight: 600; white-space: nowrap; }
+  .deliv-note { font-size: 12px; color: var(--muted); }
   .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .form-grid .full { grid-column: 1 / -1; }
+  .field[hidden] { display: none; }
   .consent { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; color: var(--muted); }
   .consent input { width: 18px; height: 18px; margin-top: 2px; accent-color: var(--accent); flex: none; }
   .drawer footer { padding: 16px 20px calc(16px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: var(--surface); }
@@ -474,7 +482,7 @@
     section: '', gender: '', brand: '', q: '', sort: '', family: '',
     favs: store.get('favs', []),
     cart: store.get('cart', []),
-    promo: null,
+    promo: null, delivery: store.get('delivery', 'pickup'),
     current: null, currentMl: null,
     sending: false, done: null
   };
@@ -858,6 +866,33 @@
     return state.promo.type === '%' ? Math.round(st * Math.min(state.promo.value, 100) / 100) : Math.min(state.promo.value, st);
   }
 
+  // Зоны доставки — из Настроек (delivery_zones: «Центр:800; Отдалённые районы:1000; За город:1500»).
+  function deliveryOptions() {
+    const s = (state.data && state.data.store) || {};
+    const zones = (s.delivery_zones || 'Центр:800; Отдалённые районы:1000; За город:1500').split(';').map(z => {
+      const [name, price] = z.split(':');
+      return { id: name.trim(), name: 'Доставка — ' + name.trim().toLowerCase(), price: Number(price) || 0 };
+    }).filter(z => z.id);
+    return [{ id: 'pickup', name: 'Самовывоз', price: 0 }].concat(zones, [{ id: 'kz', name: 'Отправка в другой город', price: null }]);
+  }
+  const freeFrom = () => Number(((state.data && state.data.store) || {}).delivery_free_from || 7000);
+  function delivery() {
+    const opts = deliveryOptions();
+    const d = opts.find(o => o.id === state.delivery) || opts[0];
+    const free = !!d.price && subtotal() - discount() >= freeFrom();
+    return Object.assign({}, d, { cost: d.price === null ? null : (free ? 0 : d.price) });
+  }
+  function sumHtml() {
+    const st = subtotal(), disc = discount(), d = delivery();
+    const dl = d.id === 'pickup' ? '' : `<div><span class="muted">Доставка</span><span>${d.cost === null ? 'уточним' : d.cost ? money(d.cost) : 'бесплатно'}</span></div>`;
+    const left = freeFrom() - (st - disc);
+    const hint = d.price && left > 0 ? `<div class="deliv-note">Добавьте ещё на ${money(left)} — доставка будет бесплатной</div>` : '';
+    return `<div><span class="muted">Сумма</span><span>${money(st)}</span></div>
+        ${disc ? `<div><span class="muted">Скидка</span><span>−${money(disc)}</span></div>` : ''}
+        ${dl}
+        <div class="grand"><span>Итого</span><span>${money(st - disc + (d.cost || 0))}</span></div>${hint}`;
+  }
+
   function openCart() {
     $('#toast').className = 'toast';
     renderCart();
@@ -891,7 +926,6 @@
       return;
     }
     const client = store.get('client', {});
-    const st = subtotal(), disc = discount();
     body.innerHTML = `
       <div>${state.cart.map((l, i) => {
         const qty = `<span class="qty"><button data-q="${i}" data-d="-1" aria-label="Меньше">−</button><span>${l.qty}</span><button data-q="${i}" data-d="1" aria-label="Больше">+</button></span>`;
@@ -916,17 +950,18 @@
       </div>
       <div class="promo-msg" id="promoMsg">${state.promo ? `<span class="ok" style="color:var(--ok)">Промокод ${esc(state.promo.code)}: скидка ${state.promo.type === '%' ? state.promo.value + '%' : money(state.promo.value)}</span>` : ''}</div>
 
-      <div class="sum">
-        <div><span class="muted">Сумма</span><span>${money(st)}</span></div>
-        ${disc ? `<div><span class="muted">Скидка</span><span>−${money(disc)}</span></div>` : ''}
-        <div class="grand"><span>Итого</span><span>${money(st - disc)}</span></div>
+      <div class="deliv"><span>Получение</span>${deliveryOptions().map(o => `<label><input type="radio" name="delivery" value="${esc(o.id)}" ${o.id === delivery().id ? 'checked' : ''}>${esc(o.name)}<b>${o.price === null ? 'по тарифу' : o.price ? money(o.price) : 'бесплатно'}</b></label>`).join('')}
+        <div class="deliv-note">От ${money(freeFrom())} доставка по городу бесплатно</div>
       </div>
+
+      <div class="sum" id="cartSum">${sumHtml()}</div>
 
       <form id="orderForm" class="form-grid" novalidate>
         <label class="field"><span>Имя *</span><input class="input" name="name" required autocomplete="given-name" value="${esc(client.name || '')}"></label>
         <label class="field"><span>Фамилия</span><input class="input" name="surname" autocomplete="family-name" value="${esc(client.surname || '')}"></label>
         <label class="field full"><span>Телефон *</span><input class="input" name="phone" type="tel" inputmode="tel" required autocomplete="tel" placeholder="+7 (7__) ___-__-__" value="${esc(client.phone || '')}"></label>
-        <label class="field full"><span>Комментарий</span><input class="input" name="comment" placeholder="Например: доставка, удобное время"></label>
+        <label class="field full" id="addrField" ${delivery().id === 'pickup' ? 'hidden' : ''}><span>Адрес${delivery().id === 'kz' ? ' (город, улица, дом)' : ''}</span><input class="input" name="address" autocomplete="street-address" value="${esc(client.address || '')}"></label>
+        <label class="field full"><span>Комментарий</span><input class="input" name="comment" placeholder="Например: удобное время"></label>
         <label class="consent full"><input type="checkbox" name="consent" ${client.consent ? 'checked' : ''}><span>Согласен(на) на обработку персональных данных в соответствии с <a href="privacy.html" target="_blank">политикой конфиденциальности</a></span></label>
       </form>`;
     foot.innerHTML = `<button class="btn wa-btn btn-block" id="submitOrder" ${state.sending ? 'disabled' : ''}>${state.sending ? 'Оформляем…' : 'Оформить заказ в WhatsApp'}</button>
@@ -975,14 +1010,18 @@
     if (!data.name.trim()) return toast('Укажите имя', true);
     if (!/^7\d{10}$/.test(phone)) return toast('Проверьте номер телефона', true);
     if (!data.consent) return toast('Отметьте согласие на обработку данных', true);
-    store.set('client', { name: data.name.trim(), surname: data.surname.trim(), phone: data.phone, consent: true });
+    const dv = delivery(), address = String(data.address || '').trim();
+    if (dv.id !== 'pickup' && !address) return toast('Укажите адрес доставки', true);
+    store.set('client', { name: data.name.trim(), surname: data.surname.trim(), phone: data.phone, address: address, consent: true });
+    const dvText = dv.name + (dv.cost === null ? ' (стоимость уточним)' : dv.cost ? ' — ' + money(dv.cost) : dv.price ? ' — бесплатно' : '')
+      + (dv.id !== 'pickup' ? '\nАдрес: ' + address : '');
 
     // Номер заказа создаём сразу на устройстве, чтобы не ждать сервер (он бывает медленным).
     // Ждём ответ сервера не дольше 2,5 с: если он сообщит об ошибке (нет в наличии и т.п.) — покажем её,
     // иначе открываем WhatsApp, а запись заказа в таблицу завершится в фоне.
     const number = orderNumber();
     const items = state.cart.map(l => l.gift ? { gift: l.gift, qty: l.qty } : { id: l.id, ml: l.ml, qty: l.qty, set: l.set || '' });
-    const body = { action: 'order', number: number, items: items, name: data.name, surname: data.surname, phone: phone, promo: state.promo ? state.promo.code : '', comment: data.comment, consent: true };
+    const body = { action: 'order', number: number, items: items, name: data.name, surname: data.surname, phone: phone, promo: state.promo ? state.promo.code : '', comment: dvText.replace('\n', '. ') + (data.comment.trim() ? '. ' + data.comment.trim() : ''), consent: true };
     state.sending = true; renderCart();
     let result = null;
     if (API) {
@@ -1001,7 +1040,8 @@
     const st = subtotal(), disc = discount();
     let text = `Здравствуйте! Заказ № ${number} с сайта:\n\n${lines.join('\n')}\n\n`;
     if (disc) text += `Сумма: ${money(st)}\nПромокод ${state.promo.code}: −${money(disc)}\n`;
-    text += `Итого: ${money(st - disc)}\n\nИмя: ${data.name.trim()} ${data.surname.trim()}`.trim();
+    if (dv.cost) text += `Доставка: ${money(dv.cost)}\n`;
+    text += `Итого: ${money(st - disc + (dv.cost || 0))}\n\n${dvText}\nИмя: ${data.name.trim()} ${data.surname.trim()}`.trim();
     if (data.comment.trim()) text += `\nКомментарий: ${data.comment.trim()}`;
     const url = `https://wa.me/${state.wa}?text=${encodeURIComponent(text)}`;
 
@@ -1119,6 +1159,14 @@
     if (e.target.closest('#submitOrder')) submitOrder();
   });
   $('#drawer').addEventListener('input', e => { if (e.target.name === 'phone') e.target.value = formatPhone(e.target.value); });
+  $('#drawer').addEventListener('change', e => {
+    if (e.target.name !== 'delivery') return;
+    state.delivery = e.target.value; store.set('delivery', state.delivery);
+    $('#cartSum').innerHTML = sumHtml();
+    const f = $('#addrField');
+    f.hidden = state.delivery === 'pickup';
+    f.querySelector('span').textContent = 'Адрес' + (state.delivery === 'kz' ? ' (город, улица, дом)' : '');
+  });
   $('#drawer').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'promoInput') { e.preventDefault(); applyPromo(); } });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('#drawer').classList.contains('open')) closeCart(); });
 
