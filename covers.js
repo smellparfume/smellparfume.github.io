@@ -2,7 +2,7 @@
 // bg — два цвета фона (центр → край), glow — цвет лучей и надписей, shape — силуэт флакона,
 // body — цвет флакона, label — текст таблички, notes — 2–3 ключевые ноты для подписи.
 window.SP_COVERS = {
-  p048: { bg: ['#7a1626', '#1a0407'], glow: '#f2b8be', shape: 'tf_lacquer', body: ['#b0182e', '#5c0714'], metal: '#d8b26a', label: ['TOM FORD', 'LOST CHERRY'], notes: 'вишня · горький миндаль · тонка' }
+  p048: { bg: ['#6e1422', '#1a0407'], glow: '#f2b8be', shape: 'tf_private', liquid: ['#8e0f22', '#3d0410'], label: ['LOST', 'CHERRY'], notes: 'вишня · горький миндаль · тонка' }
 };
 
 (function () {
@@ -11,38 +11,52 @@ window.SP_COVERS = {
 
   // Силуэты флаконов. Каждый рисует флакон в кадре 400×400 и возвращает разметку SVG.
   const SHAPES = {
-    // Tom Ford Private Blend, лаковая серия (Lost Cherry, Bitter Peach…):
-    // высокий прямоугольный флакон, массивная прямоугольная крышка в цвет, золотое кольцо и табличка.
-    tf_lacquer(c, id) {
-      const body = { x: 150, y: 160, w: 100, h: 186 };
-      const cap = { x: 163, y: 84, w: 74, h: 68 };
-      const plate = { x: 162, y: 232, w: 76, h: 34 };
+    // Tom Ford Private Blend (Lost Cherry, Oud Wood, Tobacco Vanille…):
+    // прямоугольный флакон из толстого прозрачного стекла, жидкость в цвет аромата,
+    // белая прямоугольная этикетка, хрустальная Т-образная крышка (широкая пластина + узкая ножка).
+    tf_private(c, id) {
+      const B = { x: 138, y: 172, w: 124, h: 178 };      // флакон
+      const wall = 9, base = 20;                           // толщина стенок и дна
+      const L = { x: 160, y: 232, w: 80, h: 78 };          // этикетка
+      const tint = c.liquid[0];
       return `
       <defs>
-        <linearGradient id="${id}lac" x1="0" y1="0" x2="1" y2="0">
-          <stop offset="0" stop-color="${c.body[1]}"/><stop offset=".22" stop-color="${c.body[0]}"/>
-          <stop offset=".55" stop-color="${c.body[0]}"/><stop offset="1" stop-color="${c.body[1]}"/>
+        <linearGradient id="${id}liq" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="${c.liquid[1]}"/><stop offset=".3" stop-color="${c.liquid[0]}"/>
+          <stop offset=".7" stop-color="${c.liquid[0]}"/><stop offset="1" stop-color="${c.liquid[1]}"/>
         </linearGradient>
-        <linearGradient id="${id}met" x1="0" y1="0" x2="0" y2="1">
-          <stop offset="0" stop-color="${c.metal}"/><stop offset=".5" stop-color="#fff2cf"/><stop offset="1" stop-color="${c.metal}"/>
+        <linearGradient id="${id}gl" x1="0" y1="0" x2="1" y2="0">
+          <stop offset="0" stop-color="#fff" stop-opacity=".22"/><stop offset=".5" stop-color="#fff" stop-opacity=".05"/><stop offset="1" stop-color="#fff" stop-opacity=".18"/>
         </linearGradient>
       </defs>
-      <ellipse cx="200" cy="350" rx="66" ry="5" fill="#000" opacity=".45"/>
-      <rect x="${body.x}" y="${body.y}" width="${body.w}" height="${body.h}" rx="5" fill="url(#${id}lac)" stroke="${LINE}" stroke-width="1.3"/>
-      <rect x="${body.x + 9}" y="${body.y + 8}" width="5" height="${body.h - 16}" rx="2.5" fill="#fff" opacity=".22"/>
-      <rect x="${body.x + body.w - 12}" y="${body.y + 8}" width="2" height="${body.h - 16}" rx="1" fill="#fff" opacity=".12"/>
-      <rect x="${cap.x + 4}" y="${cap.y + cap.h}" width="${cap.w - 8}" height="8" fill="url(#${id}met)" stroke="${LINE}" stroke-width=".8"/>
-      <rect x="${cap.x}" y="${cap.y}" width="${cap.w}" height="${cap.h}" rx="3" fill="url(#${id}lac)" stroke="${LINE}" stroke-width="1.3"/>
-      <rect x="${cap.x + 8}" y="${cap.y + 6}" width="4" height="${cap.h - 12}" rx="2" fill="#fff" opacity=".22"/>
-      <rect x="${plate.x}" y="${plate.y}" width="${plate.w}" height="${plate.h}" rx="1.5" fill="url(#${id}met)" stroke="#5a4320" stroke-width=".6"/>
-      <text x="200" y="${plate.y + 14}" text-anchor="middle" fill="#2a1d0a" font-family="Manrope, sans-serif" font-weight="700" font-size="8.5" letter-spacing="2.2">${esc(c.label[0])}</text>
-      <text x="200" y="${plate.y + 26}" text-anchor="middle" fill="#2a1d0a" font-family="Manrope, sans-serif" font-weight="600" font-size="6.5" letter-spacing="1.6">${esc(c.label[1])}</text>`;
+      <ellipse cx="200" cy="352" rx="74" ry="5" fill="#000" opacity=".4"/>
+      <!-- отражение на поверхности -->
+      <rect x="${B.x + wall}" y="${B.y + B.h + 3}" width="${B.w - wall * 2}" height="26" fill="${tint}" opacity=".18"/>
+      <!-- стекло флакона -->
+      <rect x="${B.x}" y="${B.y}" width="${B.w}" height="${B.h}" rx="4" fill="url(#${id}gl)" stroke="${LINE}" stroke-width="1.3"/>
+      <rect x="${B.x + wall}" y="${B.y + 12}" width="${B.w - wall * 2}" height="${B.h - 12 - base}" rx="2" fill="url(#${id}liq)"/>
+      <line x1="${B.x + wall}" y1="${B.y + B.h - base}" x2="${B.x + B.w - wall}" y2="${B.y + B.h - base}" stroke="${LINE}" stroke-opacity=".35"/>
+      <rect x="${B.x + 3}" y="${B.y + 6}" width="3" height="${B.h - 12}" rx="1.5" fill="#fff" opacity=".35"/>
+      <rect x="${B.x + B.w - 6}" y="${B.y + 6}" width="2" height="${B.h - 12}" rx="1" fill="#fff" opacity=".2"/>
+      <!-- горлышко и хрустальная крышка -->
+      <rect x="184" y="${B.y - 12}" width="32" height="12" fill="${tint}" fill-opacity=".35" stroke="${LINE}" stroke-width="1.1"/>
+      <path d="M178 ${B.y - 12} V128 H222 V${B.y - 12} Z" fill="${tint}" fill-opacity=".28" stroke="${LINE}" stroke-width="1.2"/>
+      <rect x="190" y="132" width="20" height="${B.y - 12 - 136}" fill="${tint}" opacity=".45"/>
+      <path d="M146 128 L150 106 H250 L254 128 Z" fill="${tint}" fill-opacity=".22" stroke="${LINE}" stroke-width="1.2" stroke-linejoin="round"/>
+      <line x1="152" y1="110" x2="248" y2="110" stroke="#fff" stroke-opacity=".35"/>
+      <!-- этикетка -->
+      <rect x="${L.x}" y="${L.y}" width="${L.w}" height="${L.h}" fill="#f4f0ec"/>
+      <text x="200" y="${L.y + 15}" text-anchor="middle" fill="#1d1d1d" font-family="Manrope, sans-serif" font-weight="500" font-size="9.5" letter-spacing="1.6">TOM FORD</text>
+      <text x="200" y="${L.y + 36}" text-anchor="middle" fill="#1d1d1d" font-family="Manrope, sans-serif" font-size="7.5" letter-spacing="1.4">${esc(c.label[0])}</text>
+      <text x="200" y="${L.y + 46}" text-anchor="middle" fill="#1d1d1d" font-family="Manrope, sans-serif" font-size="7.5" letter-spacing="1.4">${esc(c.label[1] || '')}</text>
+      <text x="200" y="${L.y + 63}" text-anchor="middle" fill="#1d1d1d" font-family="Manrope, sans-serif" font-size="5.2" letter-spacing="1">EAU DE PARFUM</text>
+      <text x="200" y="${L.y + 71}" text-anchor="middle" fill="#1d1d1d" font-family="Manrope, sans-serif" font-size="5.2" letter-spacing="1">50 ML</text>`;
     }
   };
 
   window.SP_coverSvg = function (p, c) {
     const id = 'c' + String(p.id).replace(/\W/g, '');
-    const shape = SHAPES[c.shape] || SHAPES.tf_lacquer;
+    const shape = SHAPES[c.shape] || SHAPES.tf_private;
 
     // Лучи, как на логотипе: расходятся веером из-за флакона
     let rays = '';
