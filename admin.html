@@ -464,8 +464,12 @@
       <div class="top"><span class="num">№ ${esc(o.number)}</span><span class="status ${STATUS_CLS[o.status] || 'st-noans'}">${esc(o.status)}</span>
         <span class="muted">${ruDate(o.date)}${o.source === 'вручную' ? ' · вручную' : ''}</span><b style="margin-left:auto;font-size:16px">${money(o.total)}</b></div>
       <div><b>${esc(client)}</b>${o.phone ? ` · <a href="https://wa.me/${o.phone}" target="_blank" rel="noopener">${phoneFmt(o.phone)}</a>` : ''}</div>
-      <div class="items">${(o.items.length ? o.items : []).map(it => `<div>${esc(it.name)} — ${fmtNum(it.ml)} мл${it.qty > 1 ? ' × ' + it.qty : ''} · ${money(it.price * it.ml * (it.qty || 1))}</div>`).join('') || esc(o.items_text)}
+      <div class="items">${(o.items.length ? o.items : []).map(it => it.gift
+          ? `<div>🎁 ${esc(it.name)}${it.qty > 1 ? ' × ' + it.qty : ''} · ${money(lineSum(it))}</div>`
+          : `<div>${esc(it.name)} — ${fmtNum(it.ml)} мл${it.qty > 1 ? ' × ' + it.qty : ''}${it.set ? ` <span class="muted">(набор «${esc(it.set)}»)</span>` : ''} · ${money(lineSum(it))}</div>`).join('') || esc(o.items_text)}
         ${o.discount ? `<div>Скидка${o.promo ? ' (' + esc(o.promo) + ')' : ''}: −${money(o.discount)}</div>` : ''}
+        ${o.gift_codes ? `<div style="color:var(--accent)">🎁 Коды сертификатов: <b style="user-select:all">${esc(o.gift_codes)}</b> — отправьте покупателю</div>` : ''}
+        ${!o.gift_codes && o.status === 'Продано' && o.items.some(it => it.gift) ? '<div class="muted">🎁 Коды сертификатов создаются…</div>' : ''}
         ${o.comment ? `<div style="color:var(--text)">💬 ${esc(o.comment)}</div>` : ''}</div>
       <div class="actions">
         ${o.status !== 'Продано' ? '<button class="btn btn-small btn-accent" data-act="sold">✓ Продано</button>' : '<button class="btn btn-small" data-act="new">Вернуть в «Новый»</button>'}
@@ -490,6 +494,8 @@
     mutate('order_status', { number: num, status: status });
   }
 
+  const lineSum = it => it.gift ? it.price * (it.qty || 1) : it.price * it.ml * (it.qty || 1);
+
   function findProductByLabel(label) {
     label = String(label || '').trim().toLowerCase();
     return S.data.products.find(p => (p.brand + ' ' + p.name).toLowerCase() === label);
@@ -508,13 +514,15 @@
 
   function orderEditor(o) {
     const isNew = !o;
+    const gifts = o ? o.items.filter(it => it.gift) : [];
     openDlg(`<h2>${isNew ? 'Продажа вручную' : 'Заказ № ' + esc(o.number)}<button class="x" data-x>×</button></h2>
       <div class="grid3">
         <label class="field"><span>Телефон</span><input class="input" name="phone" value="${esc(o ? o.phone : '')}" placeholder="+7…" inputmode="tel"></label>
         <label class="field"><span>Имя</span><input class="input" name="name" value="${esc(o ? o.name : '')}"></label>
         <label class="field"><span>Фамилия</span><input class="input" name="surname" value="${esc(o ? o.surname : '')}"></label>
       </div>
-      <div id="items" style="display:grid;gap:10px">${(o ? o.items : [null]).map(itemRow).join('')}</div>
+      ${gifts.length ? `<div class="hint" style="font-size:13px;color:var(--text)">🎁 ${gifts.map(g => esc(g.name) + (g.qty > 1 ? ' × ' + g.qty : '')).join(', ')} — останутся в заказе</div>` : ''}
+      <div id="items" style="display:grid;gap:10px">${(o ? o.items.filter(it => !it.gift) : [null]).map(itemRow).join('')}</div>
       <button class="btn btn-small" id="addItem" style="justify-self:start">+ Ещё аромат</button>
       <div class="grid3">
         <label class="field"><span>Скидка, ₸</span><input class="input" type="number" min="0" name="discount" value="${o ? o.discount : 0}"></label>
@@ -534,8 +542,8 @@
       return p ? { id: p.id, ml: Number($('[data-f=ml]', r).value), qty: Number($('[data-f=qty]', r).value) || 1, price: priceVal === '' ? (p.sale_price || p.raw_price) : Number(priceVal) } : null;
     });
     const recalc = () => {
-      const items = collect().filter(Boolean);
-      const st = items.reduce((s, it) => s + it.price * it.ml * it.qty, 0);
+      const items = collect().filter(Boolean).concat(gifts);
+      const st = items.reduce((s, it) => s + lineSum(it), 0);
       $('#edTotal').textContent = money(Math.max(0, st - Number(box.querySelector('[name=discount]').value || 0)));
     };
     box.addEventListener('input', recalc);
@@ -545,8 +553,9 @@
     $('#addItem').addEventListener('click', () => { $('#items').insertAdjacentHTML('beforeend', itemRow(null)); });
     recalc();
     $('#saveOrder').addEventListener('click', async e => {
-      const raw = collect();
-      if (raw.some(x => !x)) return toast('Выберите аромат из списка подсказок', true);
+      const picked = collect();
+      if (picked.some(x => !x)) return toast('Выберите аромат из списка подсказок', true);
+      const raw = picked.concat(gifts);
       if (!raw.length) return toast('Добавьте аромат', true);
       const phoneRaw = box.querySelector('[name=phone]').value;
       if (phoneRaw && !normPhone(phoneRaw)) return toast('Проверьте телефон', true);
@@ -554,8 +563,8 @@
         items: raw, discount: Number(box.querySelector('[name=discount]').value || 0), comment: box.querySelector('[name=comment]').value,
         phone: phoneRaw, name: box.querySelector('[name=name]').value, surname: box.querySelector('[name=surname]').value
       };
-      const subtotal = raw.reduce((s, it) => s + it.price * it.ml * it.qty, 0);
-      const items = raw.map(it => Object.assign({ name: S.data.byId[it.id].brand + ' ' + S.data.byId[it.id].name }, it));
+      const subtotal = raw.reduce((s, it) => s + lineSum(it), 0);
+      const items = raw.map(it => it.gift ? it : Object.assign({ name: S.data.byId[it.id].brand + ' ' + S.data.byId[it.id].name }, it));
       if (isNew) {
         const date = box.querySelector('[name=date]').value;
         S.data.orders.unshift({ number: '…', date: date.replace('T', ' '), status: 'Продано', phone: normPhone(phoneRaw), name: payload.name, surname: payload.surname,
@@ -919,7 +928,7 @@
           ${F('tagline', 'Подзаголовок на главной')}
           ${F('no_answer_days', 'Через сколько дней заказ «Без ответа»')}
           ${F('metrika_id', 'Яндекс Метрика — номер счётчика', 'text', 'Можно добавить позже')}
-          <div></div>
+          ${F('gift_cards', 'Подарочные сертификаты, ₸', 'text', 'Номиналы через запятую: 10000,20000,30000. Пусто — блок скрыт')}
           ${F('about', 'Текст «О нас»', 'textarea')}
           ${F('delivery', 'Доставка', 'textarea')}
           <div class="row-actions full"><button class="btn btn-accent" id="saveSettings" type="button">Сохранить</button></div>
@@ -935,6 +944,15 @@
           <div class="faq-edit list-edit" id="faqList">${d.faq.map(faqRow).join('')}</div>
           <div class="row-actions"><button class="btn btn-small" id="addFaq" style="margin-right:auto">+ Вопрос</button><button class="btn btn-accent btn-small" id="saveFaq">Сохранить</button></div>
         </div>
+      </div>
+      <div class="panel"><h2>Наборы-пробники <small>скидка действует, только если в заказе весь набор</small></h2>
+        <div class="list-edit" id="setsList">${(d.sets || []).map(setRow).join('')}</div>
+        <div class="row-actions"><button class="btn btn-small" id="addSet" style="margin-right:auto">+ Набор</button><button class="btn btn-accent btn-small" id="saveSets">Сохранить наборы</button></div>
+      </div>
+      <div class="panel"><h2>Отзывы <small>показываются на сайте, если отмечено «видно»</small></h2>
+        <div class="faq-edit list-edit" id="revList">${(d.reviews || []).map(revRow).join('')}</div>
+        <div class="row-actions"><button class="btn btn-small" id="addRev" style="margin-right:auto">+ Отзыв</button><button class="btn btn-accent btn-small" id="saveRev">Сохранить отзывы</button></div>
+        <p class="hint">Публикуйте только настоящие отзывы и с согласия автора. Фото — ссылка на картинку (например, скриншот, загруженный на Google Диск).</p>
       </div>
       <div class="panel"><h2>Смена пароля</h2>
         <div class="grid3">
@@ -973,6 +991,42 @@
       S.data.faq = list;
       mutate('save_faq', { faq: list }, 'Вопросы сохранены');
     });
+    const setsBox = $('#setsList');
+    $('#addSet').addEventListener('click', () => setsBox.insertAdjacentHTML('beforeend', setRow({ name: '', items: [], ml: 3, discount: 10, description: '', visible: true })));
+    setsBox.addEventListener('click', e => {
+      const row = e.target.closest('.fe'); if (!row) return;
+      if (e.target.closest('[data-del]')) return row.remove();
+      const rm = e.target.closest('[data-rmid]');
+      if (rm) return rm.remove();
+      if (e.target.closest('[data-addp]')) {
+        const inp = $('[data-pick]', row);
+        const p = findProductByLabel(inp.value);
+        if (!p) return toast('Выберите аромат из подсказок', true);
+        $('.set-items', row).insertAdjacentHTML('beforeend', setChip(p.id));
+        inp.value = '';
+      }
+    });
+    $('#saveSets').addEventListener('click', () => {
+      const list = $$('.fe', setsBox).map(r => ({
+        name: $('[data-n=name]', r).value.trim(), items: $$('[data-rmid]', r).map(x => x.dataset.rmid).join(', '),
+        ml: Number($('[data-n=ml]', r).value) || 3, discount: Number($('[data-n=discount]', r).value) || 0,
+        description: $('[data-n=description]', r).value.trim(), visible: $('[data-n=visible]', r).checked
+      })).filter(x => x.name);
+      if (list.some(x => !x.items)) return toast('В каждом наборе должен быть хотя бы один аромат', true);
+      S.data.sets = list.map(x => Object.assign({}, x, { items: x.items.split(', ') }));
+      mutate('save_sets', { sets: list }, 'Наборы сохранены');
+    });
+    const revBox = $('#revList');
+    $('#addRev').addEventListener('click', () => revBox.insertAdjacentHTML('afterbegin', revRow({ name: '', text: '', photo: '', date: today(), visible: true })));
+    revBox.addEventListener('click', e => { if (e.target.closest('[data-del]')) e.target.closest('.fe').remove(); });
+    $('#saveRev').addEventListener('click', () => {
+      const list = $$('.fe', revBox).map(r => ({
+        name: $('[data-n=name]', r).value.trim(), text: $('[data-n=text]', r).value.trim(), photo: $('[data-n=photo]', r).value.trim(),
+        date: r.dataset.date || today(), visible: $('[data-n=visible]', r).checked
+      })).filter(x => x.name && x.text);
+      S.data.reviews = list;
+      mutate('save_reviews', { reviews: list }, 'Отзывы сохранены');
+    });
     $('#changePass').addEventListener('click', async e => {
       await run(e.target, async () => {
         const r = await api('change_password', { old_password: $('#oldPass').value, new_password: $('#newPass').value });
@@ -983,6 +1037,23 @@
     $('#logout2').addEventListener('click', () => logout());
   }
   const secRow = s => `<div class="le"><input class="input" type="text" value="${esc(s.name)}" placeholder="Название раздела"><label class="check" title="Показывать на сайте"><input type="checkbox" ${s.visible ? 'checked' : ''}>видно</label><button class="icon-btn" data-up title="Выше">↑</button><button class="icon-btn" data-down title="Ниже">↓</button><button class="icon-btn" data-del title="Удалить">✕</button></div>`;
+  const setChip = id => { const p = S.data.byId[id]; return `<button class="chip" data-rmid="${esc(id)}" title="Убрать">${esc(p ? p.brand + ' ' + p.name : id)} ✕</button>`; };
+  const setRow = s => `<div class="fe">
+    <div style="display:flex;gap:8px"><input class="input" data-n="name" value="${esc(s.name)}" placeholder="Название набора"><button class="icon-btn" data-del title="Удалить набор">✕</button></div>
+    <div class="chips set-items">${(s.items || []).map(setChip).join('')}</div>
+    <div style="display:flex;gap:8px"><input class="input" data-pick list="productList" placeholder="Добавить аромат — начните вводить"><button class="btn btn-small" data-addp>Добавить</button></div>
+    <div class="grid3">
+      <label class="field"><span>мл каждого</span><input class="input" type="number" min="1" data-n="ml" value="${s.ml}"></label>
+      <label class="field"><span>Скидка, %</span><input class="input" type="number" min="0" max="90" data-n="discount" value="${s.discount}"></label>
+      <label class="check" style="align-self:end;padding-bottom:10px"><input type="checkbox" data-n="visible" ${s.visible ? 'checked' : ''}> показывать</label>
+    </div>
+    <input class="input" data-n="description" value="${esc(s.description)}" placeholder="Описание (одно предложение)">
+  </div>`;
+  const revRow = r => `<div class="fe" data-date="${esc(r.date || '')}">
+    <div style="display:flex;gap:8px"><input class="input" data-n="name" value="${esc(r.name)}" placeholder="Имя автора"><label class="check"><input type="checkbox" data-n="visible" ${r.visible ? 'checked' : ''}>видно</label><button class="icon-btn" data-del title="Удалить">✕</button></div>
+    <textarea class="textarea" data-n="text" style="min-height:70px" placeholder="Текст отзыва">${esc(r.text)}</textarea>
+    <input class="input" data-n="photo" value="${esc(r.photo)}" placeholder="Ссылка на фото (необязательно)">
+  </div>`;
   const faqRow = f => `<div class="fe"><div style="display:flex;gap:8px"><input class="input" value="${esc(f.q)}" placeholder="Вопрос"><button class="icon-btn" data-del title="Удалить">✕</button></div><textarea class="textarea" style="min-height:70px" placeholder="Ответ">${esc(f.a)}</textarea></div>`;
 
   // ───────── Диалоги, уведомления ─────────

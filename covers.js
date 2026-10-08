@@ -303,8 +303,8 @@ window.SP_COVERS = {
     return `<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${esc(p.brand + ' ' + p.name)}" style="width:100%;height:100%;display:block">
     <defs><radialGradient id="${id}bg" cx="50%" cy="40%" r="72%"><stop offset="0" stop-color="${bg0}"/><stop offset="1" stop-color="${bg1}"/></radialGradient></defs>
     <rect width="400" height="400" fill="url(#${id}bg)"/>
-    <g stroke="${glow}" stroke-width="1" stroke-linecap="round" opacity=".45">${rays}</g>
-    ${shape(c, id, p)}
+    <g class="rays" stroke="${glow}" stroke-width="1" stroke-linecap="round" opacity=".45">${rays}</g>
+    <g class="bottle">${shape(c, id, p)}</g>
     ${c.notes ? `<text x="200" y="382" text-anchor="middle" fill="${glow}" ${SANS} font-size="12" letter-spacing="2.2">${esc(c.notes.toUpperCase())}</text>` : ''}
   </svg>`;
   };

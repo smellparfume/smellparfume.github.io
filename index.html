@@ -157,6 +157,116 @@
   .wa-btn:hover { background: #1fbd5a; border-color: #1fbd5a; }
   .success { text-align: center; padding: 30px 10px; display: grid; gap: 14px; justify-items: center; }
   .success .num { font-family: var(--font-display); font-size: 44px; }
+
+  /* Первый экран, шаги */
+  .hero-note { margin: 16px 0 0 !important; font-size: 13px !important; color: var(--faint) !important; }
+  .hero-note a { color: var(--muted); }
+  .link-inline { border: 0; background: none; padding: 0; color: var(--accent); text-decoration: underline; font: inherit; }
+  #how { border-bottom: 1px solid var(--line); }
+  .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-top: 24px; }
+  .step { border: 1px solid var(--line); border-radius: var(--radius); padding: 22px; background: linear-gradient(180deg, rgba(255,255,255,.02), transparent); }
+  .step-n { display: grid; place-items: center; width: 36px; height: 36px; border: 1px solid var(--accent); color: var(--accent); border-radius: 50%; font-family: var(--font-display); font-size: 20px; margin-bottom: 14px; }
+  .step h3 { margin: 0 0 6px; font-family: var(--font-display); font-weight: 500; font-size: 22px; }
+  .step p { margin: 0; color: var(--muted); }
+  @media (max-width: 800px) { .steps { grid-template-columns: 1fr; } }
+
+  /* Типы аромата, избранное */
+  .family-chips .chip { font-size: 12px; min-height: 32px; }
+  .fav { position: absolute; top: 8px; right: 8px; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: rgba(20,20,20,.55); border: 1px solid var(--line); z-index: 2; color: var(--text); transition: transform .2s; }
+  .fav:hover { transform: scale(1.08); }
+  .fav svg { width: 16px; height: 16px; }
+  .fav.on { color: #e7738a; border-color: rgba(231,115,138,.5); }
+  .fav.on svg { fill: currentColor; }
+
+  /* Анимации обложек */
+  .card .ph svg .bottle { transition: transform .5s cubic-bezier(.2,.8,.2,1); transform-box: fill-box; transform-origin: 50% 100%; }
+  .card:hover .ph svg .bottle { transform: translateY(-6px) scale(1.03); }
+  .card .ph svg .rays { transition: opacity .5s; }
+  .card:hover .ph svg .rays { opacity: .8; }
+  .modal .ph svg .rays { animation: shimmer 4s ease-in-out infinite; }
+  @keyframes shimmer { 0%, 100% { opacity: .35; } 50% { opacity: .75; } }
+  .reveal-item { opacity: 0; transform: translateY(14px); transition: opacity .6s ease, transform .6s ease; }
+  .reveal-item.in { opacity: 1; transform: none; }
+  .card.reveal-item.in:hover, .gift.reveal-item.in:hover { transform: translateY(-3px); }
+  @media (prefers-reduced-motion: reduce) {
+    .reveal-item { opacity: 1; transform: none; transition: none; }
+    .modal .ph svg .rays { animation: none; }
+    .card .ph svg .bottle, .card:hover .ph svg .bottle { transition: none; transform: none; }
+  }
+
+  /* Шкалы и похожие в карточке */
+  .scales { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 18px; font-size: 12px; color: var(--muted); }
+  .scale-bar { display: flex; gap: 3px; margin-top: 5px; }
+  .scale-bar i { flex: 1; height: 4px; border-radius: 2px; background: var(--surface-2); }
+  .scale-bar i.on { background: var(--accent); }
+  .tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag { font-size: 11px; padding: 4px 10px; border-radius: 999px; background: var(--surface-2); color: var(--muted); }
+  .similar { border-top: 1px solid var(--line); padding-top: 14px; }
+  .similar-list { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 8px; }
+  .similar-list button { border: 1px solid var(--line); border-radius: 10px; background: var(--bg-2); padding: 0; overflow: hidden; text-align: left; }
+  .similar-list .ph { aspect-ratio: 1; }
+  .similar-list span { display: block; padding: 5px 7px 7px; font-size: 11px; line-height: 1.25; color: var(--muted); }
+
+  /* Наборы */
+  #sets, #gifts, #reviews { border-top: 1px solid var(--line); }
+  .sets { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 18px; }
+  @media (max-width: 400px) { .sets { grid-template-columns: 1fr; } }
+  .set { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 18px; display: grid; gap: 14px; align-content: start; }
+  .set-thumbs { display: flex; }
+  .set-thumbs > div { width: 64px; height: 64px; border-radius: 12px; overflow: hidden; border: 2px solid var(--surface); margin-left: -12px; flex: none; }
+  .set-thumbs > div:first-child { margin-left: 0; }
+  .set h3 { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: 26px; }
+  .set p { margin: 0; color: var(--muted); font-size: 13px; }
+  .set ul { margin: 0; padding: 0; list-style: none; font-size: 13px; display: grid; gap: 3px; }
+  .set ul li { display: flex; justify-content: space-between; gap: 10px; color: var(--muted); }
+  .set .price-row { display: flex; align-items: baseline; gap: 10px; }
+  .set .price-row strong { font-size: 22px; font-family: var(--font-display); }
+  .set .price-row s { color: var(--faint); }
+  .set .badge { position: static; align-self: center; }
+
+  /* Сертификаты */
+  .gift-wrap { display: grid; grid-template-columns: 1fr 1.3fr; gap: 32px; align-items: center; }
+  @media (max-width: 800px) { .gift-wrap { grid-template-columns: 1fr; } }
+  .gift-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+  .gift { position: relative; aspect-ratio: 1.6; border-radius: 14px; padding: 16px; border: 1px solid rgba(201,169,110,.45); background: radial-gradient(circle at 80% 0%, rgba(201,169,110,.28), transparent 60%), linear-gradient(135deg, #2c2c2c, #1b1b1b); display: flex; flex-direction: column; justify-content: space-between; text-align: left; color: var(--text); overflow: hidden; transition: transform .25s, border-color .25s; }
+  .gift:hover { transform: translateY(-3px); border-color: var(--accent); }
+  .gift small { font-family: var(--font-deco); letter-spacing: .14em; font-size: 12px; color: var(--accent); }
+  .gift b { font-family: var(--font-display); font-size: 28px; font-weight: 600; }
+  .gift span { font-size: 12px; color: var(--muted); }
+
+  /* Отзывы */
+  .reviews { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; }
+  .review { border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; background: var(--surface); display: grid; gap: 12px; align-content: start; }
+  .review p { margin: 0; color: var(--muted); white-space: pre-line; }
+  .review p::before { content: '“'; font-family: var(--font-display); font-size: 40px; line-height: 0; vertical-align: -14px; margin-right: 4px; color: var(--accent); }
+  .review b { font-size: 13px; }
+  .review img { border-radius: 10px; max-height: 260px; object-fit: cover; width: 100%; }
+
+  /* Квиз */
+  .quiz { width: min(620px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); overflow: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; padding: 28px; position: relative; display: grid; gap: 18px; }
+  .quiz h2 { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: 32px; line-height: 1.1; padding-right: 40px; }
+  .quiz .progress { display: flex; gap: 6px; }
+  .quiz .progress i { flex: 1; height: 3px; border-radius: 2px; background: var(--surface-2); }
+  .quiz .progress i.on { background: var(--accent); }
+  .quiz .opts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .quiz .opt { min-height: 64px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg-2); padding: 12px 14px; text-align: left; display: grid; gap: 2px; transition: border-color .2s, background .2s; }
+  .quiz .opt b { font-size: 15px; }
+  .quiz .opt small { color: var(--muted); font-size: 12px; }
+  .quiz .opt.on { border-color: var(--accent); background: rgba(201,169,110,.1); }
+  .quiz .nav { display: flex; justify-content: space-between; gap: 10px; }
+  .quiz .results { display: grid; gap: 10px; }
+  .quiz .res { display: grid; grid-template-columns: 76px 1fr auto; gap: 14px; align-items: center; border: 1px solid var(--line); border-radius: 12px; padding: 8px 12px 8px 8px; background: var(--bg-2); }
+  .quiz .res .ph { width: 76px; height: 76px; border-radius: 8px; overflow: hidden; }
+  .quiz .res .t { font-size: 13px; color: var(--muted); }
+  .quiz .res .t b { display: block; font-family: var(--font-display); font-size: 20px; font-weight: 500; color: var(--text); }
+  @media (max-width: 520px) { .quiz { padding: 20px; } .quiz .opts { grid-template-columns: 1fr; } .quiz .res { grid-template-columns: 60px 1fr; } .quiz .res .ph { width: 60px; height: 60px; } .quiz .res > .btn { grid-column: 1 / -1; } }
+
+  /* Панель корзины на телефоне */
+  .cart-bar { position: fixed; left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); z-index: 60; display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 54px; padding: 0 18px; border-radius: 999px; border: 0; background: var(--text); color: var(--accent-ink); font-weight: 700; font-size: 14px; box-shadow: 0 10px 30px rgba(0,0,0,.45); transform: translateY(0); transition: transform .3s; }
+  .cart-bar[hidden] { display: flex; transform: translateY(calc(100% + 30px)); pointer-events: none; }
+  .cart-bar span { font-weight: 500; opacity: .75; }
+  @media (min-width: 761px) { .cart-bar { display: none !important; } }
+  @media (max-width: 760px) { body.has-cart footer { padding-bottom: 96px; } }
 </style>
 </head>
 <body>
@@ -186,10 +296,22 @@
       <p id="tagline">Парфюмерия на разлив в Петропавловске. Ниша и люкс от 3 мл.</p>
       <div class="actions">
         <a class="btn btn-primary" href="#catalog">Смотреть каталог</a>
-        <a class="btn" id="heroWa" href="#" target="_blank" rel="noopener">Подобрать аромат в WhatsApp</a>
+        <button class="btn" data-quiz>✦ Подобрать аромат за минуту</button>
       </div>
+      <p class="hero-note">или <a id="heroWa" href="#" target="_blank" rel="noopener">спросите нас в WhatsApp</a></p>
     </div>
   </div>
+
+  <section id="how" class="reveal">
+    <div class="wrap">
+      <h2 class="section-title">Как это работает</h2>
+      <div class="steps">
+        <div class="step"><span class="step-n">1</span><h3>Выберите аромат и объём</h3><p>От 3 мл — чтобы познакомиться, до 35 мл — чтобы носить каждый день. Не знаете, что выбрать? Пройдите <button class="link-inline" data-quiz>подбор за минуту</button>.</p></div>
+        <div class="step"><span class="step-n">2</span><h3>Оформите заказ в WhatsApp</h3><p>Сайт соберёт сообщение с номером заказа — останется нажать «Отправить». Мы ответим и подтвердим наличие.</p></div>
+        <div class="step"><span class="step-n">3</span><h3>Получите флакон</h3><p>Аккуратно разливаем в чистый флакон с атомайзером. Самовывоз или доставка по Петропавловску, отправка по Казахстану.</p></div>
+      </div>
+    </div>
+  </section>
 
   <section id="catalog">
     <div class="wrap">
@@ -197,6 +319,7 @@
       <p class="section-sub" id="catalogSub">Цена указана за 1 мл. Выберите объём в карточке аромата.</p>
 
       <div class="chips" id="sectionChips" role="tablist" aria-label="Разделы каталога"></div>
+      <div class="chips family-chips" id="familyChips" aria-label="Тип аромата"></div>
       <div class="filters">
         <input class="input search" id="search" type="search" placeholder="Поиск: бренд или название" autocomplete="off">
         <div class="gender" id="gender" role="group" aria-label="Для кого">
@@ -216,6 +339,31 @@
       </div>
       <div class="result-info" id="resultInfo"></div>
       <div class="grid" id="grid"><div class="loading" style="grid-column:1/-1"><div class="spinner"></div></div></div>
+    </div>
+  </section>
+
+  <section id="sets" class="reveal" hidden>
+    <div class="wrap">
+      <h2 class="section-title">Наборы-пробники</h2>
+      <p class="section-sub">Несколько ароматов по 3 мл со скидкой — чтобы найти свой или подарить.</p>
+      <div class="sets" id="setList"></div>
+    </div>
+  </section>
+
+  <section id="gifts" class="reveal" hidden>
+    <div class="wrap gift-wrap">
+      <div>
+        <h2 class="section-title">Подарочный сертификат</h2>
+        <p class="section-sub" style="margin-bottom:0">Лучший подарок, когда не знаете, какой аромат выбрать. Действует год, можно потратить на любые ароматы и наборы.</p>
+      </div>
+      <div class="gift-list" id="giftList"></div>
+    </div>
+  </section>
+
+  <section id="reviews" class="reveal" hidden>
+    <div class="wrap">
+      <h2 class="section-title">Отзывы</h2>
+      <div class="reviews" id="reviewList"></div>
     </div>
   </section>
 
@@ -268,10 +416,17 @@
   </aside>
 </div>
 
+<dialog id="quizDialog" aria-label="Подбор аромата">
+  <div class="quiz" id="quizBody"></div>
+</dialog>
+
+<button class="cart-bar" id="cartBar" hidden></button>
+
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="config.js?v=3"></script>
-<script src="covers.js?v=5"></script>
+<script src="covers.js?v=6"></script>
+<script src="aromas.js?v=1"></script>
 <script>
 (function () {
   'use strict';
@@ -287,7 +442,8 @@
 
   const state = {
     data: null, byId: {}, popularity: {},
-    section: '', gender: '', brand: '', q: '', sort: '',
+    section: '', gender: '', brand: '', q: '', sort: '', family: '',
+    favs: store.get('favs', []),
     cart: store.get('cart', []),
     promo: null,
     current: null, currentMl: null,
@@ -315,13 +471,20 @@
     state.data = data;
     state.byId = {};
     data.products.forEach((p, i) => { state.byId[p.id] = p; state.popularity[p.id] = i; });
-    state.cart = state.cart.filter(l => state.byId[l.id]);
+    state.setsByName = {};
+    (data.sets || []).forEach(s => { state.setsByName[s.name] = s; });
+    state.cart = state.cart.filter(l => l.gift || (state.byId[l.id] && (!l.set || state.setsByName[l.set])));
     fillStore(data.store || {});
     renderChips();
+    renderFamilies();
     renderBrands();
     renderGrid();
+    renderSets();
+    renderGifts();
+    renderReviews();
     renderFaq();
     renderCartCount();
+    reveal(document);
     if ($('#drawer').classList.contains('open')) renderCart();
     if (data.store && data.store.metrika_id && !window.ym) addMetrika(data.store.metrika_id);
   }
@@ -349,6 +512,8 @@
     const chips = [['', 'Все']];
     if (d.products.some(p => p.sale_percent && p.in_stock)) chips.push(['__sale', 'Акции']);
     d.sections.forEach(s => { if (d.products.some(p => p.sections.includes(s))) chips.push([s, s]); });
+    const favs = state.favs.filter(id => state.byId[id]).length;
+    if (favs) chips.push(['__fav', `♡ Избранное · ${favs}`]);
     if (!chips.some(c => c[0] === state.section)) state.section = '';
     $('#sectionChips').innerHTML = chips.map(c =>
       `<button class="chip ${c[0] === state.section ? 'active' : ''}" data-s="${esc(c[0])}" role="tab" aria-selected="${c[0] === state.section}">${esc(c[1])}</button>`).join('');
@@ -363,7 +528,9 @@
     const q = state.q.trim().toLowerCase();
     let list = state.data.products.filter(p => {
       if (state.section === '__sale' && !p.sale_percent) return false;
-      if (state.section && state.section !== '__sale' && !p.sections.includes(state.section)) return false;
+      if (state.section === '__fav' && !state.favs.includes(p.id)) return false;
+      if (state.section && state.section[0] !== '_' && !p.sections.includes(state.section)) return false;
+      if (state.family && !(meta(p.id).families || []).includes(state.family)) return false;
       if (state.gender && p.gender !== state.gender) return false;
       if (state.brand && p.brand !== state.brand) return false;
       if (q && !(p.brand + ' ' + p.name + ' ' + p.notes).toLowerCase().includes(q)) return false;
@@ -412,6 +579,7 @@
       return `<button class="card ${p.in_stock ? '' : 'out'}" data-id="${esc(p.id)}">
         <div class="ph">${photo(p)}</div>
         <div class="badges">${badges.join('')}</div>
+        ${favBtn(p.id)}
         <div class="body">
           <span class="b">${esc(p.brand)}</span>
           <span class="n">${esc(p.name)}</span>
@@ -419,6 +587,100 @@
         </div>
       </button>`;
     }).join('');
+    reveal($('#grid'));
+  }
+
+  // ───── Тип аромата, избранное ─────
+  const meta = id => (window.SP_AROMAS && window.SP_AROMAS[id]) || {};
+  const FAMILY = {};
+  (window.SP_FAMILIES || []).forEach(f => { FAMILY[f[0]] = f[1]; });
+
+  function renderFamilies() {
+    const fams = (window.SP_FAMILIES || []).filter(f => state.data.products.some(p => (meta(p.id).families || []).includes(f[0])));
+    $('#familyChips').innerHTML = fams.length ? [['', 'Любой тип']].concat(fams).map(f =>
+      `<button class="chip ${f[0] === state.family ? 'active' : ''}" data-f="${f[0]}">${esc(f[1])}</button>`).join('') : '';
+  }
+
+  const HEART = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20s-7-4.4-9.2-8.6C1.2 8.2 3 4.5 6.6 4.5c2.1 0 3.4 1.2 4.4 2.6 1-1.4 2.3-2.6 4.4-2.6 3.6 0 5.4 3.7 3.8 6.9C19 15.6 12 20 12 20Z"/></svg>';
+  const favBtn = id => `<span class="fav ${state.favs.includes(id) ? 'on' : ''}" role="button" tabindex="0" data-fav="${esc(id)}" aria-label="В избранное" aria-pressed="${state.favs.includes(id)}">${HEART}</span>`;
+  function toggleFav(id) {
+    const on = !state.favs.includes(id);
+    state.favs = on ? state.favs.concat(id) : state.favs.filter(x => x !== id);
+    store.set('favs', state.favs);
+    document.querySelectorAll(`[data-fav="${id}"]`).forEach(el => { el.classList.toggle('on', on); el.setAttribute('aria-pressed', on); });
+    renderChips();
+    if (state.section === '__fav') renderGrid();
+    toast(on ? '♡ Добавлено в избранное' : 'Убрано из избранного');
+  }
+
+  // Похожие: общие типы аромата, тот же пол, близкая стойкость
+  function similar(p, n) {
+    const m = meta(p.id);
+    if (!m.families) return [];
+    return state.data.products.filter(x => x.id !== p.id && x.in_stock).map(x => {
+      const mx = meta(x.id);
+      if (!mx.families) return null;
+      const common = mx.families.filter(f => m.families.includes(f)).length;
+      if (!common) return null;
+      const union = new Set(mx.families.concat(m.families)).size;
+      let score = common / union * 10;
+      if (x.gender === p.gender || x.gender === 'Унисекс' || p.gender === 'Унисекс') score += 2;
+      if (mx.season === m.season) score += 1;
+      score -= Math.abs(mx.longevity - m.longevity) * .3;
+      return { p: x, score: score };
+    }).filter(Boolean).sort((a, b) => b.score - a.score || state.popularity[a.p.id] - state.popularity[b.p.id]).slice(0, n).map(x => x.p);
+  }
+
+  // ───── Наборы, сертификаты, отзывы ─────
+  function setPrice(s) {
+    const items = s.items.map(id => state.byId[id]).filter(Boolean);
+    const full = items.reduce((sum, p) => sum + unit(p) * s.ml, 0);
+    const price = items.reduce((sum, p) => sum + Math.round(unit(p) * (100 - s.discount) / 100) * s.ml, 0);
+    return { items: items, full: full, price: price, available: items.length === s.items.length && items.every(p => p.in_stock) };
+  }
+
+  function renderSets() {
+    const sets = (state.data.sets || []).map(s => Object.assign({ s: s }, setPrice(s))).filter(x => x.items.length);
+    $('#sets').hidden = !sets.length;
+    $('#setList').innerHTML = sets.map(x => `<div class="set">
+      <div style="display:flex;justify-content:space-between;gap:10px">
+        <div class="set-thumbs">${x.items.slice(0, 5).map(p => `<div>${photo(p)}</div>`).join('')}</div>
+        ${x.s.discount ? `<span class="badge sale">−${x.s.discount}%</span>` : ''}
+      </div>
+      <h3>${esc(x.s.name)}</h3>
+      ${x.s.description ? `<p>${esc(x.s.description)}</p>` : ''}
+      <ul>${x.items.map(p => `<li><span>${esc(p.brand)} ${esc(p.name)}</span><span>${x.s.ml} мл</span></li>`).join('')}</ul>
+      <div class="price-row"><strong>${money(x.price)}</strong>${x.full > x.price ? `<s>${money(x.full)}</s>` : ''}</div>
+      ${x.available ? `<button class="btn btn-primary btn-block" data-set="${esc(x.s.name)}">Добавить набор</button>` : '<button class="btn btn-block" disabled>Временно недоступен</button>'}
+    </div>`).join('');
+  }
+
+  function renderGifts() {
+    const amounts = String((state.data.store || {}).gift_cards || '').split(',').map(Number).filter(n => n > 0);
+    $('#gifts').hidden = !amounts.length;
+    $('#giftList').innerHTML = amounts.map(a => `<button class="gift" data-gift="${a}">
+      <small>SMELL PARFUME</small><b>${money(a)}</b><span>Подарочный сертификат · в корзину</span></button>`).join('');
+  }
+
+  function renderReviews() {
+    const list = state.data.reviews || [];
+    $('#reviews').hidden = !list.length;
+    $('#reviewList').innerHTML = list.map(r => `<div class="review">
+      ${r.photo ? `<img src="${esc(r.photo)}" alt="" loading="lazy">` : ''}
+      <p>${esc(r.text)}</p><b>${esc(r.name)}</b></div>`).join('');
+  }
+
+  // Плавное появление элементов при прокрутке
+  const io = 'IntersectionObserver' in window ? new IntersectionObserver(entries => {
+    entries.forEach(en => { if (en.isIntersecting) { en.target.classList.add('in'); io.unobserve(en.target); } });
+  }, { rootMargin: '0px 0px -40px 0px' }) : null;
+  function reveal(root) {
+    if (!io) return;
+    root.querySelectorAll('.card, .step, .set, .gift, .review').forEach(el => {
+      if (el.classList.contains('reveal-item')) return;
+      el.classList.add('reveal-item');
+      io.observe(el);
+    });
   }
 
   function renderFaq() {
@@ -438,10 +700,14 @@
   }
 
   function renderProduct() {
-    const p = state.current, u = unit(p), ml = state.currentMl;
+    const p = state.current, u = unit(p), ml = state.currentMl, m = meta(p.id);
+    const bar = (label, v) => `<div>${label}<div class="scale-bar">${[1, 2, 3, 4, 5].map(i => `<i class="${i <= v ? 'on' : ''}"></i>`).join('')}</div></div>`;
+    const season = { s: '☀️ весна-лето', w: '❄️ осень-зима', a: '🍂 круглый год' }[m.season];
+    const time = { d: 'днём', n: 'вечером', a: 'днём и вечером' }[m.time];
+    const sim = similar(p, 4);
     $('#productModal').innerHTML = `
       <button class="close-x" data-close-dialog aria-label="Закрыть">×</button>
-      <div class="ph">${photo(p)}</div>
+      <div class="ph" style="position:relative">${photo(p)}${favBtn(p.id).replace('class="fav', 'style="top:12px;left:12px;right:auto" class="fav')}</div>
       <div class="content">
         <span class="b">${esc(p.brand)}</span>
         <h2 id="pdName">${esc(p.name)}</h2>
@@ -451,6 +717,8 @@
         </div>
         ${p.description ? `<p class="desc">${esc(p.description)}</p>` : ''}
         ${p.notes ? `<div class="notes">${esc(p.notes)}</div>` : ''}
+        ${m.families ? `<div class="tags">${m.families.map(f => `<span class="tag">${esc(FAMILY[f] || f)}</span>`).join('')}${season ? `<span class="tag">${season}</span>` : ''}${time ? `<span class="tag">${time}</span>` : ''}</div>
+        <div class="scales">${bar('Стойкость', m.longevity)}${bar('Шлейф', m.sillage)}</div>` : ''}
         <div>
           <div class="ml-label">Объём · ${money(u)} за 1 мл${p.sale_percent ? ` <s style="color:var(--faint)">${money(p.price)}</s>` : ''}</div>
           <div class="ml-grid" style="margin-top:8px">
@@ -461,6 +729,8 @@
         ${p.in_stock
           ? '<button class="btn btn-primary btn-block" data-add>Добавить в корзину</button>'
           : `<a class="btn btn-block" target="_blank" rel="noopener" href="https://wa.me/${state.wa}?text=${encodeURIComponent('Здравствуйте! Когда будет в наличии ' + p.brand + ' ' + p.name + '?')}">Узнать о поступлении</a>`}
+        ${sim.length ? `<div class="similar"><div class="ml-label">Похожие ароматы</div>
+          <div class="similar-list">${sim.map(x => `<button data-open="${esc(x.id)}"><div class="ph">${photo(x)}</div><span>${esc(x.name)}</span></button>`).join('')}</div></div>` : ''}
       </div>`;
   }
 
@@ -474,15 +744,49 @@
     const n = state.cart.reduce((s, l) => s + l.qty, 0);
     $('#cartCount').textContent = n;
     $('#cartCount').classList.toggle('on', n > 0);
+    const bar = $('#cartBar');
+    const open = $('#drawer').classList.contains('open');
+    bar.hidden = !n || open;
+    document.body.classList.toggle('has-cart', n > 0);
+    if (n) bar.innerHTML = `<span>${n} ${plural(n, 'позиция', 'позиции', 'позиций')} · ${money(subtotal())}</span>Оформить →`;
+  }
+  const plural = (n, one, few, many) => (n % 10 === 1 && n % 100 !== 11) ? one : (n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20)) ? few : many;
+
+  // Цена строки корзины: сертификат — номинал, набор — цена аромата со скидкой набора
+  function linePrice(l) {
+    if (l.gift) return l.gift;
+    const p = state.byId[l.id];
+    const s = l.set && state.setsByName[l.set];
+    return s ? Math.round(unit(p) * (100 - s.discount) / 100) : unit(p);
+  }
+  const lineTotal = l => l.gift ? l.gift * l.qty : linePrice(l) * l.ml * l.qty;
+  const lineName = l => l.gift ? 'Подарочный сертификат' : state.byId[l.id].brand + ' ' + state.byId[l.id].name;
+
+  function addSet(name) {
+    const s = state.setsByName[name];
+    if (!s) return;
+    state.cart = state.cart.filter(l => l.set !== name);
+    s.items.forEach(id => state.cart.push({ id: id, ml: s.ml, qty: 1, set: name }));
+    state.done = null;
+    saveCart();
+    track('cart', '', 'набор: ' + name);
+    toast(`Набор «${name}» в корзине`);
+  }
+  function addGift(amount) {
+    const line = state.cart.find(l => l.gift === amount);
+    if (line) line.qty = Math.min(10, line.qty + 1); else state.cart.push({ gift: amount, qty: 1 });
+    state.done = null;
+    saveCart();
+    toast(`Сертификат на ${money(amount)} в корзине`);
   }
   function addToCart(id, ml) {
-    const line = state.cart.find(l => l.id === id && l.ml === ml);
+    const line = state.cart.find(l => l.id === id && l.ml === ml && !l.set);
     if (line) line.qty = Math.min(10, line.qty + 1); else state.cart.push({ id: id, ml: ml, qty: 1 });
     state.done = null;
     saveCart();
     track('cart', id, ml + ' мл');
   }
-  function subtotal() { return state.cart.reduce((s, l) => s + unit(state.byId[l.id]) * l.ml * l.qty, 0); }
+  function subtotal() { return state.cart.reduce((s, l) => s + lineTotal(l), 0); }
   function discount() {
     if (!state.promo) return 0;
     const st = subtotal();
@@ -495,11 +799,13 @@
     $('#drawer').classList.add('open');
     $('#drawer').setAttribute('aria-hidden', 'false');
     document.body.style.overflow = 'hidden';
+    renderCartCount();
   }
   function closeCart() {
     $('#drawer').classList.remove('open');
     $('#drawer').setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
+    renderCartCount();
   }
 
   function renderCart() {
@@ -523,13 +829,17 @@
     const st = subtotal(), disc = discount();
     body.innerHTML = `
       <div>${state.cart.map((l, i) => {
-        const p = state.byId[l.id], u = unit(p);
-        return `<div class="line">
+        const qty = `<span class="qty"><button data-q="${i}" data-d="-1" aria-label="Меньше">−</button><span>${l.qty}</span><button data-q="${i}" data-d="1" aria-label="Больше">+</button></span>`;
+        if (l.gift) return `<div class="line">
+          <div class="thumb" style="display:grid;place-items:center;background:linear-gradient(135deg,#2c2c2c,#1b1b1b);color:var(--accent);font-family:var(--font-display);font-size:22px">✦</div>
+          <div class="t">Подарочный сертификат<small>номинал ${money(l.gift)}</small></div>
+          <div class="r"><b>${money(lineTotal(l))}</b>${qty}</div></div>`;
+        const p = state.byId[l.id];
+        const first = l.set && state.cart.findIndex(x => x.set === l.set) === i;
+        return `${first ? `<div class="muted" style="font-size:12px;margin:6px 0 -4px;display:flex;justify-content:space-between">Набор «${esc(l.set)}» <button class="link-btn" data-rmset="${esc(l.set)}">убрать набор</button></div>` : ''}<div class="line">
           <div class="thumb">${photo(p)}</div>
-          <div class="t">${esc(p.brand)} ${esc(p.name)}<small>${l.ml} мл · ${money(u)}/мл</small></div>
-          <div class="r"><b>${money(u * l.ml * l.qty)}</b>
-            <span class="qty"><button data-q="${i}" data-d="-1" aria-label="Меньше">−</button><span>${l.qty}</span><button data-q="${i}" data-d="1" aria-label="Больше">+</button></span>
-          </div>
+          <div class="t">${esc(p.brand)} ${esc(p.name)}<small>${l.ml} мл · ${money(linePrice(l))}/мл</small></div>
+          <div class="r"><b>${money(lineTotal(l))}</b>${l.set ? '' : qty}</div>
         </div>`;
       }).join('')}</div>
 
@@ -606,7 +916,7 @@
     // Ждём ответ сервера не дольше 2,5 с: если он сообщит об ошибке (нет в наличии и т.п.) — покажем её,
     // иначе открываем WhatsApp, а запись заказа в таблицу завершится в фоне.
     const number = orderNumber();
-    const items = state.cart.map(l => ({ id: l.id, ml: l.ml, qty: l.qty }));
+    const items = state.cart.map(l => l.gift ? { gift: l.gift, qty: l.qty } : { id: l.id, ml: l.ml, qty: l.qty, set: l.set || '' });
     const body = { action: 'order', number: number, items: items, name: data.name, surname: data.surname, phone: phone, promo: state.promo ? state.promo.code : '', comment: data.comment, consent: true };
     state.sending = true; renderCart();
     let result = null;
@@ -617,10 +927,9 @@
     state.sending = false;
     if (result && result !== 'timeout' && !result.ok) { renderCart(); return toast(result.error, true); }
 
-    const lines = state.cart.map((l, i) => {
-      const p = state.byId[l.id];
-      return `${i + 1}. ${p.brand} ${p.name} — ${l.ml} мл${l.qty > 1 ? ' × ' + l.qty : ''} — ${money(unit(p) * l.ml * l.qty)}`;
-    });
+    const lines = state.cart.map((l, i) => l.gift
+      ? `${i + 1}. Подарочный сертификат ${money(l.gift)}${l.qty > 1 ? ' × ' + l.qty : ''}`
+      : `${i + 1}. ${lineName(l)} — ${l.ml} мл${l.qty > 1 ? ' × ' + l.qty : ''}${l.set ? ' (набор «' + l.set + '»)' : ''} — ${money(lineTotal(l))}`);
     const st = subtotal(), disc = discount();
     let text = `Здравствуйте! Заказ № ${number} с сайта:\n\n${lines.join('\n')}\n\n`;
     if (disc) text += `Сумма: ${money(st)}\nПромокод ${state.promo.code}: −${money(disc)}\n`;
@@ -691,10 +1000,30 @@
     clearTimeout(searchTimer);
     searchTimer = setTimeout(() => { if (state.q.trim().length > 2) track('search', '', state.q.trim().slice(0, 60)); }, 1500);
   });
-  $('#grid').addEventListener('click', e => { const c = e.target.closest('.card'); if (c) openProduct(c.dataset.id); });
+  $('#familyChips').addEventListener('click', e => {
+    const b = e.target.closest('[data-f]'); if (!b) return;
+    state.family = b.dataset.f; renderFamilies(); renderGrid();
+  });
+  $('#grid').addEventListener('click', e => {
+    const f = e.target.closest('[data-fav]');
+    if (f) { e.preventDefault(); e.stopPropagation(); return toggleFav(f.dataset.fav); }
+    const c = e.target.closest('.card'); if (c) openProduct(c.dataset.id);
+  });
+  $('#grid').addEventListener('keydown', e => {
+    const f = e.target.closest('[data-fav]');
+    if (f && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); e.stopPropagation(); toggleFav(f.dataset.fav); }
+  });
+  $('#setList').addEventListener('click', e => { const b = e.target.closest('[data-set]'); if (b) { addSet(b.dataset.set); openCart(); } });
+  $('#giftList').addEventListener('click', e => { const b = e.target.closest('[data-gift]'); if (b) { addGift(Number(b.dataset.gift)); openCart(); } });
+  $('#cartBar').addEventListener('click', openCart);
+  document.addEventListener('click', e => { if (e.target.closest('[data-quiz]')) openQuiz(); });
 
   $('#productDialog').addEventListener('click', e => {
     if (e.target === $('#productDialog') || e.target.closest('[data-close-dialog]')) return closeProduct();
+    const fav = e.target.closest('[data-fav]');
+    if (fav) return toggleFav(fav.dataset.fav);
+    const open = e.target.closest('[data-open]');
+    if (open) { openProduct(open.dataset.open); $('#productModal').scrollTop = 0; return; }
     const mlBtn = e.target.closest('[data-ml]');
     if (mlBtn) { state.currentMl = Number(mlBtn.dataset.ml); renderProduct(); return; }
     if (e.target.closest('[data-add]')) {
@@ -708,6 +1037,8 @@
   $('#cartBtn').addEventListener('click', openCart);
   $('#drawer').addEventListener('click', e => {
     if (e.target.closest('[data-close]')) { closeCart(); if (e.target.closest('#cartFoot')) location.hash = 'catalog'; return; }
+    const rs = e.target.closest('[data-rmset]');
+    if (rs) { state.cart = state.cart.filter(l => l.set !== rs.dataset.rmset); saveCart(); renderCart(); return; }
     const q = e.target.closest('[data-q]');
     if (q) {
       const l = state.cart[Number(q.dataset.q)];
@@ -722,6 +1053,94 @@
   $('#drawer').addEventListener('input', e => { if (e.target.name === 'phone') e.target.value = formatPhone(e.target.value); });
   $('#drawer').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.id === 'promoInput') { e.preventDefault(); applyPromo(); } });
   document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('#drawer').classList.contains('open')) closeCart(); });
+
+  // ───── Квиз «Подберите аромат» ─────
+  const QUIZ = [
+    { key: 'gender', title: 'Для кого аромат?', opts: [['Женский', 'Для неё'], ['Мужской', 'Для него'], ['', 'Неважно', 'покажу и унисекс']] },
+    { key: 'season', title: 'Когда будете носить?', opts: [['s', 'Весна и лето', 'свежее, лёгкое'], ['w', 'Осень и зима', 'тёплое, обволакивающее'], ['a', 'Круглый год']] },
+    { key: 'families', multi: true, title: 'Что вам нравится?', sub: 'Можно выбрать несколько', opts: [['fresh', 'Свежесть', 'цитрусы, море, зелень'], ['floral', 'Цветы', 'роза, жасмин, пион'], ['sweet', 'Сладкое', 'ваниль, карамель, фрукты'], ['woody', 'Дерево', 'сандал, кедр, ветивер'], ['spicy', 'Пряности', 'корица, шафран, уд'], ['leather', 'Кожа и дым', 'табак, кожа, смолы']] },
+    { key: 'power', title: 'Насколько заметным должен быть аромат?', opts: [['soft', 'Деликатный', 'для себя и офиса'], ['mid', 'Заметный', 'лёгкий шлейф'], ['strong', 'Яркий', 'стойкий, с шлейфом']] }
+  ];
+  const quiz = { step: 0, ans: {} };
+
+  function openQuiz() {
+    quiz.step = 0; quiz.ans = { families: [] };
+    renderQuiz();
+    const d = $('#quizDialog');
+    if (!d.open) d.showModal();
+    track('view', '', 'квиз');
+  }
+
+  function renderQuiz() {
+    const box = $('#quizBody');
+    const progress = `<div class="progress">${QUIZ.map((_, i) => `<i class="${i <= quiz.step ? 'on' : ''}"></i>`).join('')}</div>`;
+    const close = '<button class="close-x" data-qclose aria-label="Закрыть">×</button>';
+    if (quiz.step >= QUIZ.length) {
+      const res = quizResults();
+      box.innerHTML = `${close}<h2>Вам подойдут</h2>
+        <div class="results">${res.length ? res.map(p => `<div class="res">
+          <div class="ph">${photo(p)}</div>
+          <div class="t">${esc(p.brand)}<b>${esc(p.name)}</b>${(meta(p.id).families || []).map(f => FAMILY[f]).join(' · ')}</div>
+          <button class="btn btn-small" data-qadd="${esc(p.id)}">3 мл · ${money(unit(p) * 3)}</button>
+        </div>`).join('') : '<p class="muted">Не нашли точного совпадения — напишите нам, подберём вручную.</p>'}</div>
+        ${res.length > 1 ? `<button class="btn btn-primary btn-block" data-qall>Взять все ${res.length} по 3 мл · ${money(res.reduce((s, p) => s + unit(p) * 3, 0))}</button>` : ''}
+        <div class="nav"><button class="btn btn-small" data-qrestart>Пройти заново</button><a class="btn btn-small" target="_blank" rel="noopener" href="https://wa.me/${state.wa}?text=${encodeURIComponent('Здравствуйте! Помогите подобрать аромат.')}">Спросить в WhatsApp</a></div>`;
+      box.dataset.res = res.map(p => p.id).join(',');
+      return;
+    }
+    const q = QUIZ[quiz.step];
+    const val = quiz.ans[q.key];
+    const chosen = v => q.multi ? (val || []).includes(v) : val === v;
+    box.innerHTML = `${close}${progress}
+      <div><div class="muted" style="font-size:12px;letter-spacing:.08em;text-transform:uppercase">Шаг ${quiz.step + 1} из ${QUIZ.length}</div>
+      <h2>${esc(q.title)}</h2>${q.sub ? `<div class="muted" style="margin-top:6px">${esc(q.sub)}</div>` : ''}</div>
+      <div class="opts">${q.opts.map(o => `<button class="opt ${chosen(o[0]) ? 'on' : ''}" data-qopt="${o[0]}"><b>${esc(o[1])}</b>${o[2] ? `<small>${esc(o[2])}</small>` : ''}</button>`).join('')}</div>
+      <div class="nav">${quiz.step ? '<button class="btn btn-small" data-qback>← Назад</button>' : '<span></span>'}
+        ${q.multi ? `<button class="btn btn-primary btn-small" data-qnext ${(val || []).length ? '' : 'disabled'}>Дальше →</button>` : ''}</div>`;
+  }
+
+  function quizResults() {
+    const a = quiz.ans;
+    const power = { soft: 2, mid: 3, strong: 4.5 }[a.power] || 3;
+    return state.data.products.filter(p => p.in_stock && meta(p.id).families).map(p => {
+      const m = meta(p.id);
+      if (a.gender && p.gender !== a.gender && p.gender !== 'Унисекс') return null;
+      const hit = m.families.filter(f => a.families.includes(f)).length;
+      if (!hit) return null;
+      let score = hit * 4 - (m.families.length - hit);
+      if (a.season === 'a' || m.season === 'a' || m.season === a.season) score += 2; else score -= 3;
+      score -= Math.abs((m.longevity + m.sillage) / 2 - power) * 1.5;
+      if (p.sections.includes('Хиты')) score += 1;
+      return { p: p, score: score };
+    }).filter(Boolean).sort((x, y) => y.score - x.score).slice(0, 3).map(x => x.p);
+  }
+
+  $('#quizDialog').addEventListener('click', e => {
+    const d = $('#quizDialog');
+    if (e.target === d || e.target.closest('[data-qclose]')) return d.close();
+    const opt = e.target.closest('[data-qopt]');
+    if (opt) {
+      const q = QUIZ[quiz.step];
+      if (q.multi) {
+        const list = quiz.ans[q.key] || [];
+        quiz.ans[q.key] = list.includes(opt.dataset.qopt) ? list.filter(x => x !== opt.dataset.qopt) : list.concat(opt.dataset.qopt);
+      } else {
+        quiz.ans[q.key] = opt.dataset.qopt;
+        quiz.step++;
+        if (quiz.step >= QUIZ.length) track('search', '', 'квиз: ' + JSON.stringify(quiz.ans).slice(0, 50));
+      }
+      return renderQuiz();
+    }
+    if (e.target.closest('[data-qnext]')) { quiz.step++; return renderQuiz(); }
+    if (e.target.closest('[data-qback]')) { quiz.step--; return renderQuiz(); }
+    if (e.target.closest('[data-qrestart]')) return openQuiz();
+    const add = e.target.closest('[data-qadd]');
+    if (add) { addToCart(add.dataset.qadd, 3); add.textContent = '✓ В корзине'; add.disabled = true; renderCartCount(); return; }
+    if (e.target.closest('[data-qall]')) {
+      $('#quizBody').dataset.res.split(',').forEach(id => addToCart(id, 3));
+      d.close(); openCart();
+    }
+  });
 
   $('#year').textContent = new Date().getFullYear();
   load().then(() => {
