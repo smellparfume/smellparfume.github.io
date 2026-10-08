@@ -101,8 +101,8 @@
   /* Окно аромата */
   dialog { border: 0; padding: 0; background: transparent; color: var(--text); max-width: none; max-height: none; }
   dialog::backdrop { background: rgba(0,0,0,.65); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
-  .modal { width: min(860px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); overflow: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; display: grid; grid-template-columns: 1fr 1fr; position: relative; }
-  .modal .ph { background: var(--bg-2); aspect-ratio: 1; }
+  .modal { width: min(860px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); overflow: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); position: relative; }
+  .modal .ph { background: var(--bg-2); aspect-ratio: 1; align-self: start; position: sticky; top: 0; }
   .modal .ph img, .modal .ph .placeholder { width: 100%; height: 100%; object-fit: cover; }
   .modal .content { padding: 28px; display: flex; flex-direction: column; gap: 14px; }
   .modal .b { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
@@ -119,7 +119,7 @@
   .total-row { display: flex; align-items: baseline; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 14px; margin-top: auto; }
   .total-row strong { font-size: 26px; font-family: var(--font-display); font-weight: 600; }
   .close-x { position: absolute; top: 12px; right: 12px; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line-strong); background: rgba(26,26,26,.75); font-size: 22px; line-height: 1; z-index: 2; }
-  @media (max-width: 720px) { .modal { grid-template-columns: 1fr; } .modal .ph { aspect-ratio: 4/3; } .modal .content { padding: 20px; } .modal h2 { font-size: 28px; } }
+  @media (max-width: 720px) { .modal { grid-template-columns: 1fr; } .modal .ph { aspect-ratio: 4/3; position: static; } .modal .content { padding: 20px; } .modal h2 { font-size: 28px; } }
 
   /* Корзина */
   .drawer { position: fixed; inset: 0; z-index: 100; pointer-events: none; }
@@ -159,7 +159,7 @@
   .success .num { font-family: var(--font-display); font-size: 44px; }
 
   /* Первый экран, шаги */
-  .hero-note { margin: 16px 0 0 !important; font-size: 13px !important; color: var(--faint) !important; }
+  .hero-note { margin: 16px auto 0 !important; font-size: 13px !important; color: var(--faint) !important; }
   .hero-note a { color: var(--muted); }
   .link-inline { border: 0; background: none; padding: 0; color: var(--accent); text-decoration: underline; font: inherit; }
   #how { border-bottom: 1px solid var(--line); }
@@ -208,7 +208,8 @@
   .similar-list span { display: block; padding: 5px 7px 7px; font-size: 11px; line-height: 1.25; color: var(--muted); }
 
   /* Наборы */
-  #sets, #gifts, #reviews { border-top: 1px solid var(--line); }
+  #gifts, #reviews { border-top: 1px solid var(--line); }
+  #sets { border-bottom: 1px solid var(--line); }
   .sets { display: grid; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); gap: 18px; }
   @media (max-width: 400px) { .sets { grid-template-columns: 1fr; } }
   .set { border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); padding: 18px; display: grid; gap: 14px; align-content: start; }
@@ -313,6 +314,14 @@
     </div>
   </section>
 
+  <section id="sets" class="reveal" hidden>
+    <div class="wrap">
+      <h2 class="section-title">Наборы-пробники</h2>
+      <p class="section-sub">Несколько ароматов по 3 мл со скидкой — чтобы найти свой или подарить.</p>
+      <div class="sets" id="setList"></div>
+    </div>
+  </section>
+
   <section id="catalog">
     <div class="wrap">
       <h1 class="section-title">Каталог ароматов</h1>
@@ -339,14 +348,6 @@
       </div>
       <div class="result-info" id="resultInfo"></div>
       <div class="grid" id="grid"><div class="loading" style="grid-column:1/-1"><div class="spinner"></div></div></div>
-    </div>
-  </section>
-
-  <section id="sets" class="reveal" hidden>
-    <div class="wrap">
-      <h2 class="section-title">Наборы-пробники</h2>
-      <p class="section-sub">Несколько ароматов по 3 мл со скидкой — чтобы найти свой или подарить.</p>
-      <div class="sets" id="setList"></div>
     </div>
   </section>
 
@@ -1111,7 +1112,7 @@
       const hit = m.families.filter(f => a.families.includes(f)).length;
       if (!hit) return null;
       let score = hit * 4 - (m.families.length - hit);
-      if (a.season === 'a' || m.season === 'a' || m.season === a.season) score += 2; else score -= 3;
+      if (a.season !== 'a' && m.season === a.season) score += 3; else if (a.season === 'a' || m.season === 'a') score += 1; else score -= 3;
       score -= Math.abs((m.longevity + m.sillage) / 2 - power) * 1.5;
       if (p.sections.includes('Хиты')) score += 1;
       return { p: p, score: score };
