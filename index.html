@@ -271,6 +271,7 @@
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
 <script src="config.js?v=3"></script>
+<script src="covers.js?v=1"></script>
 <script>
 (function () {
   'use strict';
@@ -380,6 +381,8 @@
 
   function photo(p, cls) {
     if (p.photo) return `<img src="${esc(p.photo)}" alt="${esc(p.brand + ' ' + p.name)}" loading="lazy" class="${cls || ''}" data-b="${esc(p.brand)}" onerror="this.outerHTML=window.__spPh(this.dataset.b)">`;
+    const cover = window.SP_COVERS && window.SP_COVERS[p.id];
+    if (cover) return window.SP_coverSvg(p, cover);
     return placeholder(p.brand);
   }
   function placeholder(brand) {
