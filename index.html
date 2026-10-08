@@ -487,7 +487,7 @@
     section: '', gender: '', brand: '', q: '', sort: '', family: '',
     favs: store.get('favs', []),
     cart: store.get('cart', []),
-    promo: null, delivery: store.get('delivery', 'pickup'),
+    promo: null, delivery: store.get('delivery', 'pickup'), pay: store.get('pay', 'kaspi'),
     current: null, currentMl: null,
     sending: false, done: null
   };
@@ -899,9 +899,17 @@
   }
 
   // Оплата через Kaspi: ссылка из Kaspi QR магазина (Настройки → kaspi_url). На телефоне сразу открывает приложение Kaspi.
+  // Наличными — только при получении в Петропавловске; отправка в другой город — по предоплате Kaspi.
+  function payment() { return delivery().id === 'kz' ? 'kaspi' : state.pay === 'cash' ? 'cash' : 'kaspi'; }
+  function payHtml() {
+    const p = payment(), cashOk = delivery().id !== 'kz';
+    const opt = (v, name, note) => `<label><input type="radio" name="pay" value="${v}" ${p === v ? 'checked' : ''}>${name}${note ? `<b class="muted" style="font-weight:400">${note}</b>` : ''}</label>`;
+    return `<span>Оплата</span>${opt('kaspi', 'Kaspi', 'перевод или Kaspi QR')}${cashOk ? opt('cash', 'Наличными при получении') : '<div class="deliv-note">При отправке в другой город — предоплата через Kaspi</div>'}`;
+  }
+
   function kaspiHtml(d) {
     const s = (state.data && state.data.store) || {};
-    if (!s.kaspi_url) return '';
+    if (!s.kaspi_url || d.pay !== 'kaspi') return '';
     return `<div class="kaspi">
         <div class="muted">Оплата через Kaspi</div>
         <div class="kaspi-sum">${money(d.total)}${d.extra ? ' <small>+ доставка</small>' : ''}</div>
@@ -971,6 +979,8 @@
         <div class="deliv-note">От ${money(freeFrom())} доставка по городу бесплатно</div>
       </div>
 
+      <div class="deliv" id="payBox">${payHtml()}</div>
+
       <div class="sum" id="cartSum">${sumHtml()}</div>
 
       <form id="orderForm" class="form-grid" novalidate>
@@ -1031,14 +1041,15 @@
     if (dv.id !== 'pickup' && !address) return toast('Укажите адрес доставки', true);
     store.set('client', { name: data.name.trim(), surname: data.surname.trim(), phone: data.phone, address: address, consent: true });
     const dvText = dv.name + (dv.cost === null ? ' (стоимость уточним)' : dv.cost ? ' — ' + money(dv.cost) : dv.price ? ' — бесплатно' : '')
-      + (dv.id !== 'pickup' ? '\nАдрес: ' + address : '');
+      + (dv.id !== 'pickup' ? '\nАдрес: ' + address : '')
+      + '\nОплата: ' + (payment() === 'cash' ? 'наличными при получении' : 'Kaspi');
 
     // Номер заказа создаём сразу на устройстве, чтобы не ждать сервер (он бывает медленным).
     // Ждём ответ сервера не дольше 2,5 с: если он сообщит об ошибке (нет в наличии и т.п.) — покажем её,
     // иначе открываем WhatsApp, а запись заказа в таблицу завершится в фоне.
     const number = orderNumber();
     const items = state.cart.map(l => l.gift ? { gift: l.gift, qty: l.qty } : { id: l.id, ml: l.ml, qty: l.qty, set: l.set || '' });
-    const body = { action: 'order', number: number, items: items, name: data.name, surname: data.surname, phone: phone, promo: state.promo ? state.promo.code : '', comment: dvText.replace('\n', '. ') + (data.comment.trim() ? '. ' + data.comment.trim() : ''), consent: true };
+    const body = { action: 'order', number: number, items: items, name: data.name, surname: data.surname, phone: phone, promo: state.promo ? state.promo.code : '', comment: dvText.replace(/\n/g, '. ') + (data.comment.trim() ? '. ' + data.comment.trim() : ''), consent: true };
     state.sending = true; renderCart();
     let result = null;
     if (API) {
@@ -1065,7 +1076,7 @@
     track('wa', '', number);
     flushEvents();
     state.cart = []; state.promo = null; saveCart();
-    state.done = { number: number, url: url, total: st - disc + (dv.cost || 0), extra: dv.cost === null };
+    state.done = { number: number, url: url, total: st - disc + (dv.cost || 0), extra: dv.cost === null, pay: payment() };
     renderCart();
     window.location.href = url;
   }
@@ -1177,9 +1188,11 @@
   });
   $('#drawer').addEventListener('input', e => { if (e.target.name === 'phone') e.target.value = formatPhone(e.target.value); });
   $('#drawer').addEventListener('change', e => {
+    if (e.target.name === 'pay') { state.pay = e.target.value; store.set('pay', state.pay); return; }
     if (e.target.name !== 'delivery') return;
     state.delivery = e.target.value; store.set('delivery', state.delivery);
     $('#cartSum').innerHTML = sumHtml();
+    $('#payBox').innerHTML = payHtml();
     const f = $('#addrField');
     f.hidden = state.delivery === 'pickup';
     f.querySelector('span').textContent = 'Адрес' + (state.delivery === 'kz' ? ' (город, улица, дом)' : '');
