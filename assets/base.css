@@ -84,3 +84,13 @@ button { cursor: pointer; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
 .spinner { width: 22px; height: 22px; border: 2px solid var(--line-strong); border-top-color: var(--accent); border-radius: 50%; animation: spin .8s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
+
+/* Телефоны */
+html { -webkit-tap-highlight-color: transparent; }
+@media (max-width: 760px) {
+  /* iOS Safari увеличивает страницу при фокусе на поле со шрифтом меньше 16px */
+  .input, .select, .textarea, input, select, textarea { font-size: 16px; }
+}
+@supports (padding: env(safe-area-inset-left)) {
+  body { padding-left: env(safe-area-inset-left); padding-right: env(safe-area-inset-right); }
+}

@@ -18,7 +18,7 @@
   .wrap { width: min(1200px, 100% - 32px); margin: 0 auto; }
 
   /* Шапка */
-  .topbar { position: sticky; top: 0; z-index: 50; background: rgba(33,33,33,.92); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+  .topbar { position: sticky; top: 0; z-index: 50; background: rgba(33,33,33,.92); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
   .topbar .wrap { display: flex; align-items: center; gap: 16px; height: 64px; }
   .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; margin-right: auto; }
   .brand img { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; }
@@ -49,6 +49,7 @@
   .gender { display: flex; border: 1px solid var(--line); border-radius: 999px; padding: 3px; }
   .gender button { border: 0; background: none; border-radius: 999px; padding: 0 14px; min-height: 36px; font-size: 13px; color: var(--muted); }
   .gender button.active { background: var(--surface-2); color: var(--text); }
+  @media (max-width: 420px) { .gender button { padding: 0 6px; font-size: 12px; } }
   @media (max-width: 900px) { .filters { grid-template-columns: 1fr 1fr; } .filters .search { grid-column: 1 / -1; } .gender { grid-column: 1 / -1; justify-content: space-between; } .gender button { flex: 1; } .filters .select { min-width: 0; } }
   .result-info { font-size: 13px; color: var(--faint); margin: 8px 0 18px; }
 
@@ -99,7 +100,7 @@
 
   /* Окно аромата */
   dialog { border: 0; padding: 0; background: transparent; color: var(--text); max-width: none; max-height: none; }
-  dialog::backdrop { background: rgba(0,0,0,.65); backdrop-filter: blur(3px); }
+  dialog::backdrop { background: rgba(0,0,0,.65); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
   .modal { width: min(860px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); overflow: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; display: grid; grid-template-columns: 1fr 1fr; position: relative; }
   .modal .ph { background: var(--bg-2); aspect-ratio: 1; }
   .modal .ph img, .modal .ph .placeholder { width: 100%; height: 100%; object-fit: cover; }
@@ -206,7 +207,7 @@
         </div>
         <select class="select" id="brand" aria-label="Бренд"><option value="">Все бренды</option></select>
         <select class="select" id="sort" aria-label="Сортировка">
-          <option value="">По популярности</option>
+          <option value="">Популярные</option>
           <option value="price-asc">Сначала дешевле</option>
           <option value="price-desc">Сначала дороже</option>
           <option value="name">По названию</option>
@@ -486,6 +487,7 @@
   }
 
   function openCart() {
+    $('#toast').className = 'toast';
     renderCart();
     $('#drawer').classList.add('open');
     $('#drawer').setAttribute('aria-hidden', 'false');
