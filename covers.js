@@ -15,9 +15,9 @@ window.SP_COVERS = {
     // прямоугольный флакон из толстого прозрачного стекла, жидкость в цвет аромата,
     // белая прямоугольная этикетка, хрустальная Т-образная крышка (широкая пластина + узкая ножка).
     tf_private(c, id) {
-      const B = { x: 138, y: 172, w: 124, h: 178 };      // флакон
+      const B = { x: 140, y: 162, w: 120, h: 190 };      // флакон
       const wall = 9, base = 20;                           // толщина стенок и дна
-      const L = { x: 160, y: 232, w: 80, h: 78 };          // этикетка
+      const L = { x: 157, y: 226, w: 86, h: 86 };          // этикетка
       const tint = c.liquid[0];
       return `
       <defs>
@@ -39,18 +39,18 @@ window.SP_COVERS = {
       <rect x="${B.x + 3}" y="${B.y + 6}" width="3" height="${B.h - 12}" rx="1.5" fill="#fff" opacity=".35"/>
       <rect x="${B.x + B.w - 6}" y="${B.y + 6}" width="2" height="${B.h - 12}" rx="1" fill="#fff" opacity=".2"/>
       <!-- горлышко и хрустальная крышка -->
-      <rect x="184" y="${B.y - 12}" width="32" height="12" fill="${tint}" fill-opacity=".35" stroke="${LINE}" stroke-width="1.1"/>
-      <path d="M178 ${B.y - 12} V128 H222 V${B.y - 12} Z" fill="${tint}" fill-opacity=".28" stroke="${LINE}" stroke-width="1.2"/>
-      <rect x="190" y="132" width="20" height="${B.y - 12 - 136}" fill="${tint}" opacity=".45"/>
-      <path d="M146 128 L150 106 H250 L254 128 Z" fill="${tint}" fill-opacity=".22" stroke="${LINE}" stroke-width="1.2" stroke-linejoin="round"/>
-      <line x1="152" y1="110" x2="248" y2="110" stroke="#fff" stroke-opacity=".35"/>
+      <rect x="186" y="${B.y - 12}" width="28" height="12" fill="${tint}" fill-opacity=".3" stroke="${LINE}" stroke-width="1.1"/>
+      <path d="M176 ${B.y - 12} V120 H224 V${B.y - 12} Z" fill="${tint}" fill-opacity=".14" stroke="${LINE}" stroke-width="1.2"/>
+      <rect x="190" y="124" width="20" height="${B.y - 12 - 128}" fill="${tint}" opacity=".4"/>
+      <path d="M137 120 L141 98 H259 L263 120 Z" fill="${tint}" fill-opacity=".12" stroke="${LINE}" stroke-width="1.2" stroke-linejoin="round"/>
+      <line x1="143" y1="102" x2="257" y2="102" stroke="#fff" stroke-opacity=".35"/>
       <!-- этикетка -->
       <rect x="${L.x}" y="${L.y}" width="${L.w}" height="${L.h}" fill="#f4f0ec"/>
-      <text x="200" y="${L.y + 15}" text-anchor="middle" fill="#1d1d1d" font-family="Manrope, sans-serif" font-weight="500" font-size="9.5" letter-spacing="1.6">TOM FORD</text>
-      <text x="200" y="${L.y + 36}" text-anchor="middle" fill="#1d1d1d" font-family="Manrope, sans-serif" font-size="7.5" letter-spacing="1.4">${esc(c.label[0])}</text>
-      <text x="200" y="${L.y + 46}" text-anchor="middle" fill="#1d1d1d" font-family="Manrope, sans-serif" font-size="7.5" letter-spacing="1.4">${esc(c.label[1] || '')}</text>
-      <text x="200" y="${L.y + 63}" text-anchor="middle" fill="#1d1d1d" font-family="Manrope, sans-serif" font-size="5.2" letter-spacing="1">EAU DE PARFUM</text>
-      <text x="200" y="${L.y + 71}" text-anchor="middle" fill="#1d1d1d" font-family="Manrope, sans-serif" font-size="5.2" letter-spacing="1">50 ML</text>`;
+      <text x="200" y="${L.y + 17}" text-anchor="middle" fill="#1d1d1d" font-family="Manrope, sans-serif" font-weight="500" font-size="10.5" letter-spacing="1.6">TOM FORD</text>
+      <text x="200" y="${L.y + 39}" text-anchor="middle" fill="#1d1d1d" font-family="Manrope, sans-serif" font-size="8.5" letter-spacing="1.4">${esc(c.label[0])}</text>
+      <text x="200" y="${L.y + 50}" text-anchor="middle" fill="#1d1d1d" font-family="Manrope, sans-serif" font-size="8.5" letter-spacing="1.4">${esc(c.label[1] || '')}</text>
+      <text x="200" y="${L.y + 69}" text-anchor="middle" fill="#1d1d1d" font-family="Manrope, sans-serif" font-size="5.8" letter-spacing="1">EAU DE PARFUM</text>
+      <text x="200" y="${L.y + 78}" text-anchor="middle" fill="#1d1d1d" font-family="Manrope, sans-serif" font-size="5.8" letter-spacing="1">50 ML</text>`;
     }
   };
 
