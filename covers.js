@@ -290,7 +290,8 @@ window.SP_COVERS = {
     return `radial-gradient(ellipse 75% 60% at 50% 42%, ${bg0}, ${bg1})`;
   };
 
-  window.SP_coverSvg = function (p, d, bare) {
+  // mini = превью: кадр ближе к флакону, без подписи с нотами (в маленьком размере её не прочитать).
+  window.SP_coverSvg = function (p, d, bare, mini) {
     const id = 'c' + String(p.id).replace(/\W/g, '');
     const color = d[1];
     const c = { color: color, color2: d[3], deep: mix(color, '#000000', .45), notes: d[2] };
@@ -307,12 +308,12 @@ window.SP_COVERS = {
       rays += `<line x1="${(200 - Math.cos(a) * r1).toFixed(1)}" y1="${(150 - Math.sin(a) * r1).toFixed(1)}" x2="${(200 - Math.cos(a) * r2).toFixed(1)}" y2="${(150 - Math.sin(a) * r2).toFixed(1)}"/>`;
     }
 
-    return `<svg viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${esc(p.brand + ' ' + p.name)}" style="width:100%;height:100%;display:block">
+    return `<svg viewBox="${mini ? "60 70 280 290" : "0 0 400 400"}" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${esc(p.brand + ' ' + p.name)}" style="width:100%;height:100%;display:block">
     <defs><radialGradient id="${id}bg" cx="50%" cy="40%" r="72%"><stop offset="0" stop-color="${bg0}"/><stop offset="1" stop-color="${bg1}"/></radialGradient></defs>
     ${bare ? "" : `<rect width="400" height="400" fill="url(#${id}bg)"/>`}
     <g class="rays" stroke="${glow}" stroke-width="1" stroke-linecap="round" opacity=".45">${rays}</g>
     <g class="bottle">${shape(c, id, p)}</g>
-    ${c.notes ? `<text x="200" y="382" text-anchor="middle" fill="${glow}" ${SANS} font-size="12" letter-spacing="2.2">${esc(c.notes.toUpperCase())}</text>` : ''}
+    ${c.notes && !mini ? `<text x="200" y="382" text-anchor="middle" fill="${glow}" ${SANS} font-size="12" letter-spacing="2.2">${esc(c.notes.toUpperCase())}</text>` : ''}
   </svg>`;
   };
 })();
