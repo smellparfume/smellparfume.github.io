@@ -8,7 +8,9 @@
 <meta name="theme-color" content="#212121">
 <meta property="og:title" content="SMELL PARFUME — парфюмерия на разлив">
 <meta property="og:description" content="Люксовые и нишевые ароматы от 3 мл. Петропавловск.">
-<meta property="og:image" content="assets/logo.jpg">
+<meta property="og:image" content="https://smellparfume.github.io/assets/logo.jpg">
+<link rel="canonical" href="https://smellparfume.github.io/">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Store","name":"SMELL PARFUME","description":"Люксовая и нишевая парфюмерия на разлив от 3 мл","url":"https://smellparfume.github.io/","image":"https://smellparfume.github.io/assets/logo.jpg","telephone":"+77052113923","address":{"@type":"PostalAddress","addressLocality":"Петропавловск","addressCountry":"KZ"},"sameAs":["https://instagram.com/smell_parfume_petro"],"priceRange":"₸₸"}</script>
 <link rel="icon" href="assets/logo.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -424,6 +426,7 @@
     <div class="links">
       <a id="footWa" href="#" target="_blank" rel="noopener">WhatsApp</a>
       <a id="footIg" href="#" target="_blank" rel="noopener">Instagram</a>
+      <a href="/aromaty/">Все ароматы</a>
       <a href="privacy.html">Политика конфиденциальности</a>
     </div>
   </div>
@@ -587,6 +590,12 @@
       <text x="50" y="88" text-anchor="middle" font-size="20" fill="#f4efe6" stroke="none">${esc(initials)}</text></svg></div>`;
   }
   window.__spPh = placeholder;
+
+  // Адрес страницы аромата — так же, как в tools/build-pages.ps1
+  function slug(s) {
+    return String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+      .replace(/&/g, ' and ').replace(/'/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+  }
 
   // Небольшое превью: фото или обложка крупным планом без мелких подписей
   function thumb(p) {
@@ -758,6 +767,7 @@
     const season = { s: '☀️ весна-лето', w: '❄️ осень-зима', a: '🍂 круглый год' }[m.season];
     const time = { d: 'днём', n: 'вечером', a: 'днём и вечером' }[m.time];
     const sim = similar(p, 4);
+    const pageUrl = '/aromat/' + slug(p.brand ? p.brand + ' ' + p.name : p.name) + '/';
     $('#productModal').innerHTML = `
       <button class="close-x" data-close-dialog aria-label="Закрыть">×</button>
       <div class="ph"${!p.photo && window.SP_COVERS && window.SP_COVERS[p.id] ? ` style="background:${window.SP_coverBg(window.SP_COVERS[p.id])}"` : ''}>${!p.photo && window.SP_COVERS && window.SP_COVERS[p.id] ? window.SP_coverSvg(p, window.SP_COVERS[p.id], true) : photo(p)}${favBtn(p.id).replace('class="fav', 'style="top:12px;left:12px;right:auto" class="fav')}</div>
@@ -782,6 +792,7 @@
         ${p.in_stock
           ? '<button class="btn btn-primary btn-block" data-add>Добавить в корзину</button>'
           : `<a class="btn btn-block" target="_blank" rel="noopener" href="https://wa.me/${state.wa}?text=${encodeURIComponent('Здравствуйте! Когда будет в наличии ' + p.brand + ' ' + p.name + '?')}">Узнать о поступлении</a>`}
+        <a class="link-btn" href="${pageUrl}" style="align-self:center;font-size:13px;color:var(--muted)">Подробнее об аромате →</a>
         ${sim.length ? `<div class="similar"><div class="ml-label">Похожие ароматы</div>
           <div class="similar-list">${sim.map(x => `<button data-open="${esc(x.id)}">${thumb(x)}
             <span class="sim-t"><small>${esc(x.brand)}</small><b>${esc(x.name)}</b><em>${money(unit(x))} / мл</em></span></button>`).join('')}</div></div>` : ''}
