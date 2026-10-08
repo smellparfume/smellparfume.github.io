@@ -102,9 +102,10 @@
   dialog { border: 0; padding: 0; background: transparent; color: var(--text); max-width: none; max-height: none; }
   dialog::backdrop { background: rgba(0,0,0,.65); -webkit-backdrop-filter: blur(3px); backdrop-filter: blur(3px); }
   .modal { width: min(860px, calc(100vw - 24px)); max-height: calc(100dvh - 24px); overflow: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 20px; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); position: relative; }
-  .modal .ph { background: var(--bg-2); position: relative; display: grid; place-items: center; min-height: 100%; overflow: hidden; }
-  .modal .ph > svg { width: 100%; height: auto !important; max-height: 100%; }
-  .modal .ph img, .modal .ph .placeholder { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+  .modal > .ph { background: var(--bg-2); position: relative; display: grid; place-items: center; min-height: 100%; overflow: hidden; }
+  .modal > .ph > svg { width: 100%; height: auto !important; max-height: 100%; }
+  .modal > .ph img, .modal > .ph .placeholder { width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0; }
+  .modal .content { min-width: 0; }
   .modal .content { padding: 28px; display: flex; flex-direction: column; gap: 14px; }
   .modal .b { font-size: 12px; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
   .modal h2 { margin: -6px 0 0; font-family: var(--font-display); font-weight: 500; font-size: 34px; line-height: 1.1; }
@@ -120,7 +121,7 @@
   .total-row { display: flex; align-items: baseline; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 14px; margin-top: auto; }
   .total-row strong { font-size: 26px; font-family: var(--font-display); font-weight: 600; }
   .close-x { position: absolute; top: 12px; right: 12px; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line-strong); background: rgba(26,26,26,.75); font-size: 22px; line-height: 1; z-index: 2; }
-  @media (max-width: 720px) { .modal { grid-template-columns: 1fr; } .modal .ph { aspect-ratio: 1; min-height: 0; } .modal .ph > svg { height: 100% !important; } .modal .content { padding: 20px; } .modal h2 { font-size: 28px; } }
+  @media (max-width: 720px) { .modal { grid-template-columns: minmax(0, 1fr); } .modal > .ph { aspect-ratio: 1; min-height: 0; } .modal > .ph > svg { height: 100% !important; } .modal .content { padding: 20px; } .modal h2 { font-size: 28px; } }
 
   /* Корзина */
   .drawer { position: fixed; inset: 0; z-index: 100; pointer-events: none; }
@@ -184,14 +185,14 @@
   .card:hover .ph svg .bottle { transform: translateY(-6px) scale(1.03); }
   .card .ph svg .rays { transition: opacity .5s; }
   .card:hover .ph svg .rays { opacity: .8; }
-  .modal .ph svg .rays { animation: shimmer 4s ease-in-out infinite; }
+  .modal > .ph svg .rays { animation: shimmer 4s ease-in-out infinite; }
   @keyframes shimmer { 0%, 100% { opacity: .35; } 50% { opacity: .75; } }
   .reveal-item { opacity: 0; transform: translateY(14px); transition: opacity .6s ease, transform .6s ease; }
   .reveal-item.in { opacity: 1; transform: none; }
   .card.reveal-item.in:hover, .gift.reveal-item.in:hover { transform: translateY(-3px); }
   @media (prefers-reduced-motion: reduce) {
     .reveal-item { opacity: 1; transform: none; transition: none; }
-    .modal .ph svg .rays { animation: none; }
+    .modal > .ph svg .rays { animation: none; }
     .card .ph svg .bottle, .card:hover .ph svg .bottle { transition: none; transform: none; }
   }
 
