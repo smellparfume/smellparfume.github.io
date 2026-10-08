@@ -178,6 +178,11 @@
   .wa-btn:hover { background: #1fbd5a; border-color: #1fbd5a; }
   .success { text-align: center; padding: 30px 10px; display: grid; gap: 14px; justify-items: center; }
   .success .num { font-family: var(--font-display); font-size: 44px; }
+  .kaspi { display: grid; gap: 10px; text-align: center; padding: 18px 14px; border: 1px solid var(--line); border-radius: 16px; }
+  .kaspi p { margin: 0; font-size: 13px; }
+  .kaspi-sum { font-size: 28px; font-weight: 700; }
+  .kaspi-sum small { font-size: 14px; font-weight: 400; color: var(--muted); }
+  .kaspi-btn { background: #f14635; border-color: #f14635; color: #fff; }
 
   /* Первый экран, шаги */
   .hero-note { margin: 16px auto 0 !important; font-size: 13px !important; color: var(--faint) !important; }
@@ -893,6 +898,18 @@
         <div class="grand"><span>Итого</span><span>${money(st - disc + (d.cost || 0))}</span></div>${hint}`;
   }
 
+  // Оплата через Kaspi: ссылка из Kaspi QR магазина (Настройки → kaspi_url). На телефоне сразу открывает приложение Kaspi.
+  function kaspiHtml(d) {
+    const s = (state.data && state.data.store) || {};
+    if (!s.kaspi_url) return '';
+    return `<div class="kaspi">
+        <div class="muted">Оплата через Kaspi</div>
+        <div class="kaspi-sum">${money(d.total)}${d.extra ? ' <small>+ доставка</small>' : ''}</div>
+        <p class="muted">Оплатите после того, как мы подтвердим заказ в WhatsApp. В Kaspi введите эту сумму${s.kaspi_name ? `, получатель — ${esc(s.kaspi_name)}` : ''}.</p>
+        <a class="btn btn-block kaspi-btn" href="${esc(s.kaspi_url)}" target="_blank" rel="noopener">Оплатить в Kaspi</a>
+      </div>`;
+  }
+
   function openCart() {
     $('#toast').className = 'toast';
     renderCart();
@@ -916,7 +933,7 @@
         <div class="muted">Заказ оформлен</div>
         <div class="num">№ ${esc(d.number)}</div>
         <p class="muted" style="margin:0">Осталось отправить сообщение в WhatsApp — мы подтвердим наличие и договоримся о получении.</p>
-      </div>`;
+      </div>${kaspiHtml(d)}`;
       foot.innerHTML = `<a class="btn wa-btn btn-block" href="${esc(d.url)}" target="_blank" rel="noopener">Открыть WhatsApp</a>`;
       return;
     }
@@ -1048,7 +1065,7 @@
     track('wa', '', number);
     flushEvents();
     state.cart = []; state.promo = null; saveCart();
-    state.done = { number: number, url: url };
+    state.done = { number: number, url: url, total: st - disc + (dv.cost || 0), extra: dv.cost === null };
     renderCart();
     window.location.href = url;
   }
