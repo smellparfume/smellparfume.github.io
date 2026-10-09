@@ -414,6 +414,12 @@
   .free-bar .track i { display: block; height: 100%; background: linear-gradient(90deg, var(--accent), #e6c98f); border-radius: 3px; transition: width .4s ease; }
   .free-bar.ok { color: var(--ok); border-color: rgba(120,190,140,.4); }
 
+  /* Пробник в подарок */
+  .gift-sample { font-size: 13px; color: var(--muted); display: grid; gap: 8px; padding: 12px 14px; border: 1px dashed var(--line-strong); border-radius: 12px; }
+  .gift-sample b { color: var(--text); }
+  .gift-sample.on { border: 1px solid var(--accent); background: rgba(201,169,110,.08); color: var(--text); }
+  .gift-sample .select { width: 100%; }
+
   /* Недавно смотрели */
   #recent { padding: 8px 0 48px; }
   #recent .head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
@@ -706,7 +712,7 @@
     data: null, byId: {}, popularity: {}, hits: [],
     section: '', gender: '', brand: '', q: '', sort: '', family: '',
     favs: store.get('favs', []),
-    recent: store.get('recent', []), cmp: store.get('cmp', []), diy: [], diyQ: '',
+    recent: store.get('recent', []), cmp: store.get('cmp', []), diy: [], diyQ: '', sample: store.get('sample', ''),
     cart: store.get('cart', []),
     promo: null, delivery: store.get('delivery', 'pickup'), pay: store.get('pay', 'kaspi'), loyalty: null,
     current: null, currentMl: null,
@@ -1371,6 +1377,31 @@
   }
   // Порог бесплатной доставки по городу (Настройки → delivery_free_from; 0 — без бесплатной доставки).
   const freeFrom = () => { const v = ((state.data && state.data.store) || {}).delivery_free_from; return v === undefined || v === '' ? 7000 : Number(v) || 0; };
+  // ───── Пробник в подарок: при заказе ароматов от sample_from ₸ (Настройки; 0 — выключено). Сервер проверяет то же. ─────
+  function sampleRules() {
+    const s = (state.data && state.data.store) || {};
+    const from = s.sample_from === undefined || s.sample_from === '' ? 10000 : Number(s.sample_from) || 0;
+    return { on: from > 0, from: from, ml: Number(s.sample_ml) || 1 };
+  }
+  const aromaTotal = () => state.cart.filter(l => !l.gift).reduce((a, l) => a + lineTotal(l), 0);
+  // Выбранный пробник, если заказ до него дотягивает и аромат в наличии.
+  function sampleItem() {
+    const r = sampleRules(), p = state.byId[state.sample];
+    return r.on && p && p.in_stock && aromaTotal() >= r.from ? p : null;
+  }
+  function sampleHtml() {
+    const r = sampleRules();
+    if (!r.on || !state.cart.some(l => !l.gift)) return '';
+    const left = r.from - aromaTotal();
+    if (left > 0) return `<div class="gift-sample"><span>🎁 Добавьте ароматов ещё на <b>${money(left)}</b> — и выберите пробник ${r.ml} мл в подарок</span></div>`;
+    const list = state.data.products.filter(p => p.in_stock).sort((a, b) => (a.brand + a.name).localeCompare(b.brand + b.name));
+    const cur = sampleItem();
+    return `<div class="gift-sample ${cur ? 'on' : ''}">
+        <span>🎁 ${cur ? `Подарок: <b>${esc(cur.brand)} ${esc(cur.name)}</b>, ${r.ml} мл` : `Вам подарок — пробник ${r.ml} мл. Выберите аромат:`}</span>
+        <select class="select" id="sampleSel" aria-label="Пробник в подарок"><option value="">${cur ? 'Без подарка' : '— выбрать аромат —'}</option>${list.map(p => `<option value="${esc(p.id)}" ${cur && cur.id === p.id ? 'selected' : ''}>${esc(p.brand)} ${esc(p.name)}</option>`).join('')}</select>
+      </div>`;
+  }
+
   function freeBarHtml() {
     const from = freeFrom();
     if (!from || delivery().id === 'kz') return '';
@@ -1473,6 +1504,7 @@
     const client = store.get('client', {});
     if (client.phone) fetchLoyalty(phoneDigits(client.phone));
     body.innerHTML = `<div id="freeBar">${freeBarHtml()}</div>
+      <div id="sampleBox">${sampleHtml()}</div>
       <div>${state.cart.map((l, i) => {
         const qty = `<span class="qty"><button data-q="${i}" data-d="-1" aria-label="Меньше">−</button><span>${l.qty}</span><button data-q="${i}" data-d="1" aria-label="Больше">+</button></span>`;
         if (l.gift) return `<div class="line">
@@ -1589,6 +1621,8 @@
     // иначе открываем WhatsApp, а запись заказа в таблицу завершится в фоне.
     const number = orderNumber();
     const items = state.cart.map(l => l.gift ? { gift: l.gift, qty: l.qty } : (l.diy ? { id: l.id, ml: l.ml, qty: 1, diy: true } : { id: l.id, ml: l.ml, qty: l.qty, set: l.set || '' }));
+    const gift = sampleItem();
+    if (gift) items.push({ id: gift.id, ml: sampleRules().ml, qty: 1, sample: true });
     const body = { action: 'order', number: number, items: items, name: data.name, surname: data.surname, phone: phone, promo: state.promo ? state.promo.code : '', comment: dvText.replace(/\n/g, '. ') + (data.comment.trim() ? '. ' + data.comment.trim() : ''), consent: true };
     state.sending = true; renderCart();
     let result = null, request = null;
@@ -1612,6 +1646,7 @@
     const lines = state.cart.map((l, i) => l.gift
       ? `${i + 1}. Подарочный сертификат ${money(l.gift)}${l.qty > 1 ? ' × ' + l.qty : ''}`
       : `${i + 1}. ${lineName(l)} — ${l.ml} мл${l.qty > 1 ? ' × ' + l.qty : ''}${l.set ? ' (набор «' + l.set + '»)' : ''} — ${money(lineTotal(l))}`);
+    if (gift) lines.push(`🎁 Подарок: ${gift.brand} ${gift.name} — ${sampleRules().ml} мл`);
     const st = subtotal(), disc = discount();
     let text = `Здравствуйте! Заказ № ${number} с сайта:\n\n${lines.join('\n')}\n\n`;
     if (disc) text += `Сумма: ${money(st)}\n${loyaltyWins() ? 'Скидка постоянного клиента (' + loyalty().n + '-й заказ)' : (state.promo.ref ? 'Код друга ' : 'Промокод ') + state.promo.code}: −${money(disc)}\n`;
@@ -1622,7 +1657,7 @@
 
     track('wa', '', number);
     flushEvents();
-    state.cart = []; state.promo = null; state.loyalty = null; saveCart();
+    state.cart = []; state.promo = null; state.loyalty = null; state.sample = ''; store.set('sample', ''); saveCart();
     state.done = { number: number, url: url, total: st - disc + (dv.cost || 0), extra: dv.cost === null, pay: payment(),
       ref: (result && result.ref_code) || myRefCode() };
     renderCart();
@@ -1787,6 +1822,7 @@
   });
   $('#drawer').addEventListener('change', e => {
     if (e.target.name === 'pay') { state.pay = e.target.value; store.set('pay', state.pay); return; }
+    if (e.target.id === 'sampleSel') { state.sample = e.target.value; store.set('sample', state.sample); $('#sampleBox').innerHTML = sampleHtml(); return; }
     if (e.target.name !== 'delivery') return;
     state.delivery = e.target.value; store.set('delivery', state.delivery);
     $('#cartSum').innerHTML = sumHtml();

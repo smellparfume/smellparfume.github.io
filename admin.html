@@ -470,7 +470,7 @@
       <div><b>${esc(client)}</b>${o.phone ? ` · <a href="https://wa.me/${o.phone}" target="_blank" rel="noopener">${phoneFmt(o.phone)}</a>` : ''}</div>
       <div class="items">${(o.items.length ? o.items : []).map(it => it.gift
           ? `<div>🎁 ${esc(it.name)}${it.qty > 1 ? ' × ' + it.qty : ''} · ${money(lineSum(it))}</div>`
-          : `<div>${esc(it.name)} — ${fmtNum(it.ml)} мл${it.qty > 1 ? ' × ' + it.qty : ''}${it.set ? ` <span class="muted">(набор «${esc(it.set)}»)</span>` : ''} · ${money(lineSum(it))}</div>`).join('') || esc(o.items_text)}
+          : `<div>${esc(it.name)} — ${fmtNum(it.ml)} мл${it.qty > 1 ? ' × ' + it.qty : ''}${it.set ? ` <span class="muted">(набор «${esc(it.set)}»)</span>` : ''}${it.sample ? ' <span class="muted">(🎁 подарок)</span>' : ''} · ${money(lineSum(it))}</div>`).join('') || esc(o.items_text)}
         ${o.discount ? `<div>Скидка${o.loyalty ? ' постоянного клиента (' + esc(o.loyalty) + ')' : o.promo ? ' (' + esc(o.promo) + ')' : ''}: −${money(o.discount)}</div>` : ''}
         ${o.gift_codes ? `<div style="color:var(--accent)">🎁 Коды сертификатов: <b style="user-select:all">${esc(o.gift_codes)}</b> — отправьте покупателю</div>` : ''}
         ${!o.gift_codes && o.status === 'Продано' && o.items.some(it => it.gift) ? '<div class="muted">🎁 Коды сертификатов создаются…</div>' : ''}
@@ -1052,6 +1052,9 @@
           <h2 class="full" style="margin:10px 0 0">Доставка по городу</h2>
           ${F('delivery_zones', 'Зоны и цены доставки', 'text', 'Через точку с запятой: Центр:800; Отдалённые районы:1000; За город:1500')}
           ${F('delivery_free_from', 'Бесплатная доставка от, ₸', 'text', 'Сумма заказа после скидки. В корзине покупатель видит, сколько осталось добавить. 0 — без бесплатной доставки')}
+          <h2 class="full" style="margin:10px 0 0">Пробник в подарок</h2>
+          ${F('sample_from', 'Пробник в подарок при заказе от, ₸', 'text', 'Сумма ароматов в корзине (без сертификатов). Пусто — 10 000. 0 — подарок выключен')}
+          ${F('sample_ml', 'Объём пробника, мл', 'text', 'Пусто — 1 мл. Покупатель сам выбирает аромат в корзине')}
           <h2 class="full" style="margin:10px 0 0">Собери свой набор</h2>
           ${F('diy_count', 'Сколько ароматов в наборе', 'text', 'Пусто — 5. 0 — конструктор выключен')}
           ${F('diy_ml', 'Объём каждого, мл', 'text', 'Пусто — 3')}
