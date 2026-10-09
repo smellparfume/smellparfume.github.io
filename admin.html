@@ -1466,7 +1466,7 @@
   // ───────── Настройки ─────────
   function renderSettings() {
     const d = S.data, s = d.settings;
-    const F = (k, label, type, hint) => `<label class="field ${type === 'textarea' ? 'full' : ''}"><span>${label}</span>${type === 'textarea' ? `<textarea class="textarea" name="${k}" style="min-height:140px">${esc(s[k] || '')}</textarea>` : `<input class="input" name="${k}" value="${esc(s[k] || '')}">`}${hint ? `<small class="hint">${hint}</small>` : ''}</label>`;
+    const F = (k, label, type, hint) => `<label class="field ${type === 'textarea' ? 'full' : ''}"><span>${label}</span>${type === 'textarea' ? `<textarea class="textarea" name="${k}" style="min-height:140px">${esc(s[k] || '')}</textarea>` : `<input class="input" name="${k}" value="${esc(s[k] || '')}"${(() => { const m = /Пусто — ([^.(]+?)(\.|$| \()/.exec(hint || ''); return m ? ` placeholder="сейчас: ${esc(m[1].trim())}"` : ''; })()}>`}${hint ? `<small class="hint">${hint}</small>` : ''}</label>`;
     $('#main').innerHTML = head('Настройки') + `
       <div class="set-nav">${SET_GROUPS.map(g => `<button class="chip" data-sgo="${g[0]}">${g[1]}</button>`).join('')}</div>
       <div class="panel" id="setFormPanel"><h2 id="setTitle">Магазин</h2>
