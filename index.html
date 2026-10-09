@@ -12,6 +12,11 @@
 <link rel="canonical" href="https://smellparfume.github.io/">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Store","name":"SMELL PARFUME","description":"Люксовая и нишевая парфюмерия на разлив от 3 мл","url":"https://smellparfume.github.io/","image":"https://smellparfume.github.io/assets/logo.jpg","telephone":"+77052113923","address":{"@type":"PostalAddress","addressLocality":"Петропавловск","addressCountry":"KZ"},"sameAs":["https://instagram.com/smell_parfume_petro"],"priceRange":"₸₸"}</script>
 <link rel="icon" href="assets/logo.jpg">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="SMELL PARFUME">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600&family=Italiana&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -229,6 +234,26 @@
   .kaspi-sum { font-size: 28px; font-weight: 700; }
   .kaspi-sum small { font-size: 14px; font-weight: 400; color: var(--muted); }
   .kaspi-btn { background: #f14635; border-color: #f14635; color: #fff; }
+
+  /* Хиты, ноты, ожидание аромата, код для друзей */
+  .badge.hot { background: linear-gradient(135deg, #e8c27e, #d0793f); color: #1a1209; }
+  .note-chips { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; margin: 0 0 12px; font-size: 12px; color: var(--faint); }
+  .note-chips:empty { display: none; }
+  @media (max-width: 520px) { .note-chips { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-right: -16px; padding-right: 16px; } .note-chips::-webkit-scrollbar { display: none; } .note-chips button, .note-chips span { flex: none; } }
+  .note-chips button { border: 1px solid var(--line); background: none; color: var(--muted); border-radius: 999px; padding: 3px 11px; font-size: 12px; min-height: 28px; transition: border-color .2s, color .2s; }
+  .note-chips button:hover, .note-chips button.active { border-color: var(--accent); color: var(--accent); }
+  .waitbox { display: grid; gap: 10px; padding: 14px; border: 1px dashed var(--line-strong); border-radius: 14px; }
+  .waitbox p { margin: 0; font-size: 13px; color: var(--muted); }
+  .waitbox .row { display: grid; grid-template-columns: 1fr 1.3fr; gap: 8px; }
+  .waitbox .consent { font-size: 11px; }
+  .waitbox.done { border-style: solid; border-color: var(--ok); color: var(--ok); text-align: center; font-size: 14px; }
+  @media (max-width: 420px) { .waitbox .row { grid-template-columns: 1fr; } }
+  .refbox { display: grid; gap: 8px; text-align: center; padding: 18px 14px; border: 1px solid rgba(222,190,130,.45); border-radius: 16px; background: radial-gradient(circle at 50% 0, rgba(222,190,130,.12), transparent 70%); }
+  .refbox p { margin: 0; font-size: 13px; color: var(--muted); }
+  .refcode { font-family: var(--font-display); font-size: 32px; letter-spacing: .08em; color: var(--accent); line-height: 1.1; }
+  .refbox .btns { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 4px; }
+  .refmini { font-size: 12px; color: var(--faint); text-align: center; }
+  .refmini b { color: var(--accent); letter-spacing: .06em; }
 
   /* Первый экран, шаги */
   .hero-note { margin: 16px auto 0 !important; font-size: 13px !important; color: var(--faint) !important; }
@@ -465,7 +490,7 @@
       <div class="chips" id="sectionChips" role="tablist" aria-label="Разделы каталога"></div>
       <div class="chips family-chips" id="familyChips" aria-label="Тип аромата"></div>
       <div class="filters">
-        <input class="input search" id="search" type="search" placeholder="Поиск: бренд или название" autocomplete="off">
+        <input class="input search" id="search" type="search" placeholder="Поиск: бренд, название, нота" autocomplete="off">
         <div class="gender" id="gender" role="group" aria-label="Для кого">
           <button data-g="" class="active">Все</button>
           <button data-g="Женский">Женские</button>
@@ -481,6 +506,7 @@
           <option value="new">Новые</option>
         </select>
       </div>
+      <div class="note-chips" id="noteChips" aria-label="Поиск по нотам"></div>
       <div class="result-info" id="resultInfo"></div>
       <div class="grid" id="grid"><div class="loading" style="grid-column:1/-1"><div class="spinner"></div></div></div>
     </div>
@@ -535,6 +561,7 @@
       <a class="soc" id="footWa" href="#" target="_blank" rel="noopener"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.9 9.9 0 0 0 4.74 1.21c5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm0 18.15c-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24 4.54 0 8.24 3.7 8.24 8.24 0 4.55-3.7 8.24-8.24 8.24zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.78.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.43.06-.66.31-.22.25-.86.85-.86 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.14-1.18-.06-.1-.22-.16-.47-.28z"/></svg> WhatsApp</a>
       <a class="soc" id="footIg" href="#" target="_blank" rel="noopener"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.4" cy="6.6" r="1.3" fill="currentColor"/></svg> Instagram</a>
       <a href="?otzyv" id="footReview">Оставить отзыв</a>
+      <a href="#" id="installApp" hidden>📲 Установить на телефон</a>
       <a href="/aromaty/">Все ароматы</a>
       <a href="privacy.html">Политика конфиденциальности</a>
     </div>
@@ -583,7 +610,7 @@
   };
 
   const state = {
-    data: null, byId: {}, popularity: {},
+    data: null, byId: {}, popularity: {}, hits: [],
     section: '', gender: '', brand: '', q: '', sort: '', family: '',
     favs: store.get('favs', []),
     cart: store.get('cart', []),
@@ -597,15 +624,19 @@
   async function load() {
     const cached = store.get('catalog', null);
     if (cached) apply(cached);
+    // Первый визит: пока сервер Google отвечает (несколько секунд), показываем снимок каталога с самого сайта.
+    let fresh = false, shown = !!cached;
+    if (!cached && API) fetch('catalog.json').then(r => r.json()).then(d => { if (!fresh && d && d.ok) { apply(d); shown = true; } }).catch(() => {});
     try {
       const url = API ? API + '?action=catalog' : 'demo.json';
       const res = await fetch(url, { cache: 'no-store' });
       const data = await res.json();
       if (!data.ok) throw new Error(data.error || 'Ошибка');
+      fresh = true;
       store.set('catalog', data);
       apply(data);
     } catch (e) {
-      if (!cached) $('#grid').innerHTML = '<div class="empty" style="grid-column:1/-1">Не удалось загрузить каталог. Обновите страницу или напишите нам в WhatsApp.</div>';
+      if (!shown) $('#grid').innerHTML = '<div class="empty" style="grid-column:1/-1">Не удалось загрузить каталог. Обновите страницу или напишите нам в WhatsApp.</div>';
     }
   }
 
@@ -613,6 +644,7 @@
     state.data = data;
     state.byId = {};
     data.products.forEach((p, i) => { state.byId[p.id] = p; state.popularity[p.id] = i; });
+    state.hits = (data.hits || []).filter(id => state.byId[id]);
     state.setsByName = {};
     (data.sets || []).forEach(s => { state.setsByName[s.name] = s; });
     state.cart = state.cart.filter(l => l.gift || (state.byId[l.id] && (!l.set || state.setsByName[l.set])));
@@ -620,6 +652,7 @@
     renderChips();
     renderFamilies();
     renderBrands();
+    renderNotes();
     renderGrid();
     renderSets();
     renderGifts();
@@ -653,6 +686,7 @@
   function renderChips() {
     const d = state.data;
     const chips = [['', 'Все']];
+    if (state.hits.length >= 3) chips.push(['__hit', '🔥 Чаще всего берут']);
     if (d.products.some(p => p.sale_percent && p.in_stock)) chips.push(['__sale', 'Акции']);
     d.sections.forEach(s => { if (d.products.some(p => p.sections.includes(s))) chips.push([s, s]); });
     const favs = state.favs.filter(id => state.byId[id]).length;
@@ -667,16 +701,35 @@
     $('#brand').innerHTML = '<option value="">Все бренды</option>' + brands.map(b => `<option ${b === state.brand ? 'selected' : ''}>${esc(b)}</option>`).join('');
   }
 
+  // Поиск: каждое слово должно найтись в бренде, названии, нотах или типе аромата (ё = е).
+  const norm = s => String(s || '').toLowerCase().replace(/ё/g, 'е');
+  const hay = p => norm(p.brand + ' ' + p.name + ' ' + p.notes + ' ' + (meta(p.id).families || []).map(f => FAMILY[f] || '').join(' '));
+  // Хит: по продажам за последние недели (с сервера) или вручную — раздел «Хиты».
+  const hitRank = p => { const i = state.hits.indexOf(p.id); return i >= 0 ? i : p.sections.includes('Хиты') ? 100 : 1000; };
+
+  // Популярные ноты каталога — быстрые кнопки под поиском.
+  function renderNotes() {
+    const cnt = {};
+    state.data.products.forEach(p => String(p.notes || '').split(',').forEach(n => {
+      const k = norm(n).trim();
+      if (k.length > 2 && k.length < 18) cnt[k] = (cnt[k] || 0) + 1;
+    }));
+    const top = Object.keys(cnt).filter(k => cnt[k] >= 3).sort((a, b) => cnt[b] - cnt[a]).slice(0, 10);
+    const q = norm(state.q).trim();
+    $('#noteChips').innerHTML = top.length ? '<span>Ноты:</span>' + top.map(n => `<button data-note="${esc(n)}" class="${n === q ? 'active' : ''}">${esc(n)}</button>`).join('') : '';
+  }
+
   function filtered() {
-    const q = state.q.trim().toLowerCase();
+    const words = norm(state.q).split(/[\s,]+/).filter(Boolean);
     let list = state.data.products.filter(p => {
+      if (state.section === '__hit' && !state.hits.includes(p.id)) return false;
       if (state.section === '__sale' && !p.sale_percent) return false;
       if (state.section === '__fav' && !state.favs.includes(p.id)) return false;
       if (state.section && state.section[0] !== '_' && !p.sections.includes(state.section)) return false;
       if (state.family && !(meta(p.id).families || []).includes(state.family)) return false;
       if (state.gender && p.gender !== state.gender) return false;
       if (state.brand && p.brand !== state.brand) return false;
-      if (q && !(p.brand + ' ' + p.name + ' ' + p.notes).toLowerCase().includes(q)) return false;
+      if (words.length) { const h = hay(p); if (!words.every(w => h.includes(w))) return false; }
       return true;
     });
     const cmp = {
@@ -684,7 +737,7 @@
       'price-desc': (a, b) => unit(b) - unit(a),
       'name': (a, b) => (a.brand + a.name).localeCompare(b.brand + b.name),
       'new': (a, b) => (b.created || '').localeCompare(a.created || '') || state.popularity[b.id] - state.popularity[a.id]
-    }[state.sort] || ((a, b) => (b.sections.includes('Хиты') - a.sections.includes('Хиты')) || state.popularity[a.id] - state.popularity[b.id]);
+    }[state.sort] || ((a, b) => (hitRank(a) - hitRank(b)) || state.popularity[a.id] - state.popularity[b.id]);
     list.sort((a, b) => (b.in_stock - a.in_stock) || cmp(a, b));
     return list;
   }
@@ -729,7 +782,8 @@
     $('#grid').innerHTML = list.map(p => {
       const badges = [];
       if (p.sale_percent) badges.push(`<span class="badge sale">−${p.sale_percent}%</span>`);
-      if (p.sections.includes('Хиты')) badges.push('<span class="badge">Хит</span>');
+      if (state.hits.includes(p.id)) badges.push('<span class="badge hot">🔥 Хит</span>');
+      else if (p.sections.includes('Хиты')) badges.push('<span class="badge">Хит</span>');
       if (p.sections.includes('Новинки')) badges.push('<span class="badge">New</span>');
       if (!p.in_stock) badges.push('<span class="badge dim">Нет в наличии</span>');
       return `<button class="card ${p.in_stock ? '' : 'out'}" data-id="${esc(p.id)}">
@@ -940,12 +994,46 @@
         <div class="total-row"><span class="muted">Итого</span><strong>${money(u * ml)}</strong></div>
         ${p.in_stock
           ? '<button class="btn btn-primary btn-block" data-add>Добавить в корзину</button>'
-          : `<a class="btn btn-block" target="_blank" rel="noopener" href="https://wa.me/${state.wa}?text=${encodeURIComponent('Здравствуйте! Когда будет в наличии ' + p.brand + ' ' + p.name + '?')}">Узнать о поступлении</a>`}
+          : waitHtml(p)}
         <a class="link-btn" href="${pageUrl}" style="align-self:center;font-size:13px;color:var(--muted)">Подробнее об аромате →</a>
         ${sim.length ? `<div class="similar"><div class="ml-label">Похожие ароматы</div>
           <div class="similar-list">${sim.map(x => `<button data-open="${esc(x.id)}">${thumb(x)}
             <span class="sim-t"><small>${esc(x.brand)}</small><b>${esc(x.name)}</b><em>${money(unit(x))} / мл</em></span></button>`).join('')}</div></div>` : ''}
       </div>`;
+  }
+
+  // ───── «Сообщить о поступлении»: телефон попадает на лист «Ожидают», владельцу — в «Напомнить» ─────
+  function waitHtml(p) {
+    if (!API) return `<a class="btn btn-block" target="_blank" rel="noopener" href="https://wa.me/${state.wa}?text=${encodeURIComponent('Здравствуйте! Когда будет в наличии ' + p.brand + ' ' + p.name + '?')}">Узнать о поступлении</a>`;
+    if (store.get('waits', []).includes(p.id)) return '<div class="waitbox done">✓ Мы напишем вам в WhatsApp, как только аромат появится</div>';
+    const c = store.get('client', {});
+    return `<div class="waitbox" id="waitBox">
+        <p>Сейчас этого аромата нет. Оставьте телефон — напишем в WhatsApp, как только он появится.</p>
+        <div class="row">
+          <input class="input" id="wName" placeholder="Имя" maxlength="40" autocomplete="given-name" value="${esc(c.name || '')}">
+          <input class="input" id="wPhone" type="tel" inputmode="tel" placeholder="+7 (7__) ___-__-__" autocomplete="tel" value="${esc(c.phone || '')}">
+        </div>
+        <label class="consent"><input type="checkbox" id="wConsent" ${c.consent ? 'checked' : ''}><span>Согласен(на) на обработку персональных данных по <a href="privacy.html" target="_blank">политике</a></span></label>
+        <button class="btn btn-primary btn-block" data-wait>Сообщить о поступлении</button>
+      </div>`;
+  }
+  async function submitWait() {
+    const p = state.current, phone = phoneDigits($('#wPhone').value), name = $('#wName').value.trim();
+    if (!/^7\d{10}$/.test(phone)) return toast('Проверьте номер телефона', true);
+    if (!$('#wConsent').checked) return toast('Отметьте согласие на обработку данных', true);
+    const btn = $('[data-wait]'); btn.disabled = true; btn.textContent = 'Отправляем…';
+    try {
+      const r = await post({ action: 'notify', id: p.id, phone: phone, name: name, consent: true });
+      if (!r.ok) throw new Error(r.error);
+      store.set('waits', store.get('waits', []).concat(p.id).slice(-50));
+      const c = store.get('client', {});
+      store.set('client', Object.assign(c, { name: c.name || name, phone: $('#wPhone').value, consent: true }));
+      $('#waitBox').outerHTML = waitHtml(p);
+      toast('Готово! Напишем, когда аромат появится');
+    } catch (err) {
+      toast(err.message || 'Не удалось отправить, попробуйте ещё раз', true);
+      btn.disabled = false; btn.textContent = 'Сообщить о поступлении';
+    }
   }
 
   function closeProduct() {
@@ -1089,6 +1177,29 @@
       </div>`;
   }
 
+  // ───── «Приведи друга»: личный код клиента приходит с сервера после заказа ─────
+  const refRules = () => { const s = (state.data && state.data.store) || {}; return { percent: Number(s.ref_percent) || 0, bonus: Number(s.ref_bonus_percent) || 0 }; };
+  function refShareUrl(code) {
+    const r = refRules();
+    const text = `Привет! Беру ароматы на разлив в SMELL PARFUME — от 3 мл, люкс и ниша. По моему коду ${code} тебе −${r.percent}% на первый заказ: https://smellparfume.github.io/?code=${code}`;
+    return 'https://wa.me/?text=' + encodeURIComponent(text);
+  }
+  function refHtml(code) {
+    const r = refRules();
+    if (!code || r.percent <= 0) return '';
+    return `<div class="refbox">
+        <div class="muted">🎁 Приведите друга</div>
+        <div class="refcode">${esc(code)}</div>
+        <p>Ваш личный код: другу — −${r.percent}% на первый заказ${r.bonus ? `, а вам — −${r.bonus}% на следующий, когда друг купит` : ''}.</p>
+        <div class="btns"><button class="btn btn-small" data-copyref="${esc(code)}">Скопировать</button>
+          <a class="btn btn-small wa-btn" href="${refShareUrl(code)}" target="_blank" rel="noopener">Отправить другу</a></div>
+      </div>`;
+  }
+  function myRefCode() {
+    const ref = store.get('ref', null), c = store.get('client', {});
+    return ref && c.phone && phoneDigits(c.phone) === ref.phone ? ref.code : '';
+  }
+
   function openCart() {
     $('#toast').className = 'toast';
     renderCart();
@@ -1112,7 +1223,7 @@
         <div class="muted">Заказ оформлен</div>
         <div class="num">№ ${esc(d.number)}</div>
         <p class="muted" style="margin:0">Осталось отправить сообщение в WhatsApp — мы подтвердим наличие и договоримся о получении.</p>
-      </div>${kaspiHtml(d)}`;
+      </div>${kaspiHtml(d)}${refHtml(d.ref)}`;
       foot.innerHTML = `<a class="btn wa-btn btn-block" href="${esc(d.url)}" target="_blank" rel="noopener">Открыть WhatsApp</a>`;
       return;
     }
@@ -1141,11 +1252,11 @@
 
       <div class="field"><span>Промокод</span>
         <div class="promo-row">
-          <input class="input" id="promoInput" placeholder="Если есть" value="${esc(state.promo ? state.promo.code : '')}" autocapitalize="characters">
+          <input class="input" id="promoInput" placeholder="Если есть" value="${esc(state.promo ? state.promo.code : store.get('pendingPromo', ''))}" autocapitalize="characters">
           <button class="btn btn-small" id="promoApply">${state.promo ? 'Убрать' : 'Применить'}</button>
         </div>
       </div>
-      <div class="promo-msg" id="promoMsg">${state.promo ? `<span class="ok" style="color:var(--ok)">Промокод ${esc(state.promo.code)}: скидка ${state.promo.type === '%' ? state.promo.value + '%' : money(state.promo.value)}</span>` : ''}</div>
+      <div class="promo-msg" id="promoMsg">${promoMsgHtml()}</div>
 
       <div class="deliv"><span>Получение</span>${deliveryOptions().map(o => `<label><input type="radio" name="delivery" value="${esc(o.id)}" ${o.id === delivery().id ? 'checked' : ''}>${esc(o.name)}<b>${o.price === null ? 'по тарифу' : o.price ? money(o.price) : 'бесплатно'}</b></label>`).join('')}
         <div class="deliv-note">От ${money(freeFrom())} доставка по городу бесплатно</div>
@@ -1155,6 +1266,7 @@
 
       <div id="loyBox">${loyaltyHtml()}</div>
       <div class="sum" id="cartSum">${sumHtml()}</div>
+      ${myRefCode() && refRules().percent > 0 ? `<div class="refmini">Ваш код для друзей: <b>${esc(myRefCode())}</b> · <a href="${refShareUrl(myRefCode())}" target="_blank" rel="noopener">поделиться</a></div>` : ''}
 
       <form id="orderForm" class="form-grid" novalidate>
         <label class="field"><span>Имя *</span><input class="input" name="name" required autocomplete="given-name" value="${esc(client.name || '')}"></label>
@@ -1164,6 +1276,9 @@
         <label class="field full"><span>Комментарий</span><input class="input" name="comment" placeholder="Например: удобное время"></label>
         <label class="consent full"><input type="checkbox" name="consent" ${client.consent ? 'checked' : ''}><span>Согласен(на) на обработку персональных данных в соответствии с <a href="privacy.html" target="_blank">политикой конфиденциальности</a></span></label>
       </form>`;
+    // Код друга из ссылки: если телефон уже известен — проверяем сразу (один раз).
+    const pend = store.get('pendingPromo', '');
+    if (pend && !state.promo && state.pendTried !== pend && /^7\d{10}$/.test(phoneDigits(client.phone || ''))) { state.pendTried = pend; applyPromo(); }
     foot.innerHTML = `<button class="btn wa-btn btn-block" id="submitOrder" ${state.sending ? 'disabled' : ''}>${state.sending ? 'Оформляем…' : 'Оформить заказ в WhatsApp'}</button>
       <div class="muted" style="font-size:12px;text-align:center;margin-top:8px">Откроется WhatsApp с готовым сообщением</div>`;
   }
@@ -1184,8 +1299,18 @@
   }
   const phoneDigits = v => { let d = String(v).replace(/\D/g, ''); if (d.length === 11 && d[0] === '8') d = '7' + d.slice(1); return d; };
 
+  const promoMsgHtml = () => state.promo ? `<span class="ok" style="color:var(--ok)">${state.promo.ref ? '🎁 Код друга' : 'Промокод'} ${esc(state.promo.code)}: скидка ${state.promo.type === '%' ? state.promo.value + '%' : money(state.promo.value)}${state.promo.ref ? ' на первый заказ' : ''}</span>` : '';
+  // Обновляем только блок промокода и итоги — без перерисовки формы, чтобы не стереть введённые имя и телефон.
+  function refreshPromo() {
+    $('#promoApply').textContent = state.promo ? 'Убрать' : 'Применить';
+    if (!state.promo) $('#promoInput').value = '';
+    $('#promoMsg').innerHTML = promoMsgHtml();
+    $('#cartSum').innerHTML = sumHtml();
+    $('#loyBox').innerHTML = loyaltyHtml();
+  }
+
   async function applyPromo() {
-    if (state.promo) { state.promo = null; renderCart(); return; }
+    if (state.promo) { state.promo = null; refreshPromo(); return; }
     const code = $('#promoInput').value.trim().toUpperCase();
     if (!code) return;
     const msg = $('#promoMsg');
@@ -1194,9 +1319,13 @@
     const phone = phoneDigits(($('#orderForm [name=phone]') || {}).value || '');
     try {
       const r = await post({ action: 'promo', code: code, phone: phone, subtotal: subtotal() });
-      if (!r.ok) { msg.innerHTML = `<span style="color:var(--danger)">${esc(r.error)}</span>`; return; }
-      state.promo = { code: r.code, type: r.type, value: r.value };
-      renderCart();
+      if (!r.ok) {
+        msg.innerHTML = `<span style="color:var(--danger)">${esc(r.error)}</span>`;
+        if (code === store.get('pendingPromo', '') && !/телефон/.test(r.error)) store.set('pendingPromo', '');
+        return;
+      }
+      state.promo = { code: r.code, type: r.type, value: r.value, ref: !!r.ref };
+      if ($('#promoInput')) refreshPromo();
     } catch (e) {
       msg.innerHTML = '<span style="color:var(--danger)">Не удалось проверить промокод</span>';
     }
@@ -1224,23 +1353,30 @@
     const items = state.cart.map(l => l.gift ? { gift: l.gift, qty: l.qty } : { id: l.id, ml: l.ml, qty: l.qty, set: l.set || '' });
     const body = { action: 'order', number: number, items: items, name: data.name, surname: data.surname, phone: phone, promo: state.promo ? state.promo.code : '', comment: dvText.replace(/\n/g, '. ') + (data.comment.trim() ? '. ' + data.comment.trim() : ''), consent: true };
     state.sending = true; renderCart();
-    let result = null;
+    let result = null, request = null;
     if (API) {
       const send = () => fetch(API, { method: 'POST', body: JSON.stringify(body), keepalive: true }).then(r => r.json()).catch(() => null);
       // Если ответ не похож на подтверждение заказа (сбой сети или Google) — отправляем ещё раз.
       // Повтор безопасен: сервер узнаёт заказ по номеру и телефону и не создаёт дубль.
-      const request = send().then(r => (r && (r.number || r.ok === false)) ? r : send());
+      request = send().then(r => (r && (r.number || r.ok === false)) ? r : send());
       result = await Promise.race([request, new Promise(res => setTimeout(() => res('timeout'), 2500))]);
     }
     state.sending = false;
     if (result && result !== 'timeout' && !result.ok) { renderCart(); return toast(result.error, true); }
+    // Личный код «Приведи друга» приходит в ответе сервера; если ответ придёт позже — покажем код тогда.
+    if (request) request.then(r => {
+      if (!r || !r.ref_code) return;
+      store.set('ref', { code: r.ref_code, phone: phone });
+      if (state.done && state.done.number === number && state.done.ref !== r.ref_code) { state.done.ref = r.ref_code; if ($('#drawer').classList.contains('open')) renderCart(); }
+    });
+    store.set('pendingPromo', '');
 
     const lines = state.cart.map((l, i) => l.gift
       ? `${i + 1}. Подарочный сертификат ${money(l.gift)}${l.qty > 1 ? ' × ' + l.qty : ''}`
       : `${i + 1}. ${lineName(l)} — ${l.ml} мл${l.qty > 1 ? ' × ' + l.qty : ''}${l.set ? ' (набор «' + l.set + '»)' : ''} — ${money(lineTotal(l))}`);
     const st = subtotal(), disc = discount();
     let text = `Здравствуйте! Заказ № ${number} с сайта:\n\n${lines.join('\n')}\n\n`;
-    if (disc) text += `Сумма: ${money(st)}\n${loyaltyWins() ? 'Скидка постоянного клиента (' + loyalty().n + '-й заказ)' : 'Промокод ' + state.promo.code}: −${money(disc)}\n`;
+    if (disc) text += `Сумма: ${money(st)}\n${loyaltyWins() ? 'Скидка постоянного клиента (' + loyalty().n + '-й заказ)' : (state.promo.ref ? 'Код друга ' : 'Промокод ') + state.promo.code}: −${money(disc)}\n`;
     if (dv.cost) text += `Доставка: ${money(dv.cost)}\n`;
     text += `Итого: ${money(st - disc + (dv.cost || 0))}\n\n${dvText}\nИмя: ${data.name.trim()} ${data.surname.trim()}`.trim();
     if (data.comment.trim()) text += `\nКомментарий: ${data.comment.trim()}`;
@@ -1249,7 +1385,8 @@
     track('wa', '', number);
     flushEvents();
     state.cart = []; state.promo = null; state.loyalty = null; saveCart();
-    state.done = { number: number, url: url, total: st - disc + (dv.cost || 0), extra: dv.cost === null, pay: payment() };
+    state.done = { number: number, url: url, total: st - disc + (dv.cost || 0), extra: dv.cost === null, pay: payment(),
+      ref: (result && result.ref_code) || myRefCode() };
     renderCart();
     window.location.href = url;
   }
@@ -1287,10 +1424,10 @@
   }
 
   let toastTimer;
-  function toast(msg, err) {
+  function toast(msg, err, ms) {
     const t = $('#toast');
     t.textContent = msg; t.className = 'toast show' + (err ? ' error' : '');
-    clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.className = 'toast'; }, 2600);
+    clearTimeout(toastTimer); toastTimer = setTimeout(() => { t.className = 'toast'; }, ms || (msg.length > 60 ? 5000 : 2600));
   }
 
   // ───── События интерфейса ─────
@@ -1305,9 +1442,16 @@
   $('#sort').addEventListener('change', e => { state.sort = e.target.value; renderGrid(); });
   let searchTimer;
   $('#search').addEventListener('input', e => {
-    state.q = e.target.value; renderGrid();
+    state.q = e.target.value; renderGrid(); renderNotes();
     clearTimeout(searchTimer);
     searchTimer = setTimeout(() => { if (state.q.trim().length > 2) track('search', '', state.q.trim().slice(0, 60)); }, 1500);
+  });
+  $('#noteChips').addEventListener('click', e => {
+    const b = e.target.closest('[data-note]'); if (!b) return;
+    state.q = norm(state.q).trim() === b.dataset.note ? '' : b.dataset.note;
+    $('#search').value = state.q;
+    renderNotes(); renderGrid();
+    if (state.q) track('search', '', 'нота: ' + state.q);
   });
   $('#familyChips').addEventListener('click', e => {
     const b = e.target.closest('[data-f]'); if (!b) return;
@@ -1333,6 +1477,7 @@
     if (fav) return toggleFav(fav.dataset.fav);
     const open = e.target.closest('[data-open]');
     if (open) { openProduct(open.dataset.open); $('#productModal').scrollTop = 0; return; }
+    if (e.target.closest('[data-wait]')) return submitWait();
     const mlBtn = e.target.closest('[data-ml]');
     if (mlBtn) { state.currentMl = Number(mlBtn.dataset.ml); renderProduct(); return; }
     if (e.target.closest('[data-add]')) {
@@ -1341,6 +1486,7 @@
       toast(`Добавлено: ${state.current.name}, ${state.currentMl} мл`);
     }
   });
+  $('#productDialog').addEventListener('input', e => { if (e.target.id === 'wPhone') e.target.value = formatPhone(e.target.value); });
   $('#productDialog').addEventListener('close', () => { if (location.hash.startsWith('#p-') && history.replaceState) history.replaceState(null, '', location.pathname + location.search); });
 
   $('#cartBtn').addEventListener('click', openCart);
@@ -1357,12 +1503,21 @@
       saveCart(); renderCart(); return;
     }
     if (e.target.closest('#promoApply')) { e.preventDefault(); applyPromo(); return; }
+    const cp = e.target.closest('[data-copyref]');
+    if (cp) {
+      const done = () => toast('Код скопирован: ' + cp.dataset.copyref);
+      if (navigator.clipboard) navigator.clipboard.writeText(cp.dataset.copyref).then(done, () => toast(cp.dataset.copyref)); else toast(cp.dataset.copyref);
+      return;
+    }
     if (e.target.closest('#submitOrder')) submitOrder();
   });
   $('#drawer').addEventListener('input', e => {
     if (e.target.name !== 'phone') return;
     e.target.value = formatPhone(e.target.value);
     fetchLoyalty(phoneDigits(e.target.value));
+    // Код друга из ссылки проверяем, как только введён телефон (он нужен, чтобы убедиться, что заказ первый).
+    const pend = store.get('pendingPromo', ''), inp = $('#promoInput');
+    if (pend && !state.promo && inp && inp.value.trim().toUpperCase() === pend && /^7\d{10}$/.test(phoneDigits(e.target.value))) applyPromo();
   });
   $('#drawer').addEventListener('change', e => {
     if (e.target.name === 'pay') { state.pay = e.target.value; store.set('pay', state.pay); return; }
@@ -1433,7 +1588,7 @@
       let score = hit * 4 - (m.families.length - hit);
       if (a.season !== 'a' && m.season === a.season) score += 3; else if (a.season === 'a' || m.season === 'a') score += 1; else score -= 3;
       score -= Math.abs((m.longevity + m.sillage) / 2 - power) * 1.5;
-      if (p.sections.includes('Хиты')) score += 1;
+      if (hitRank(p) < 1000) score += 1;
       return { p: p, score: score };
     }).filter(Boolean).sort((x, y) => y.score - x.score).slice(0, 3).map(x => x.p);
   }
@@ -1507,11 +1662,31 @@
   $('#footReview').addEventListener('click', e => { e.preventDefault(); openReview(''); });
 
   // Форма отзыва не зависит от каталога — открываем сразу, не дожидаясь загрузки.
-  const rv = new URLSearchParams(location.search).get('otzyv');
+  const params = new URLSearchParams(location.search);
+  const rv = params.get('otzyv');
   if (rv !== null) openReview(rv);
+  // Ссылка от друга: ?code=AIGUL27 — код сам подставится в корзину.
+  const refParam = String(params.get('code') || '').toUpperCase().replace(/[^A-Z0-9_-]/g, '').slice(0, 30);
+  if (refParam) store.set('pendingPromo', refParam);
   load().then(() => {
     const m = location.hash.match(/^#p-(\w+)/);
     if (m && state.byId[m[1]]) openProduct(m[1]);
+    const pct = refRules().percent;
+    if (refParam && pct > 0) setTimeout(() => toast(`🎁 Код друга ${refParam}: −${pct}% на первый заказ`), 600);
+  });
+
+  // ───── Установка на телефон (значок на экране, как приложение) ─────
+  if ('serviceWorker' in navigator && location.protocol === 'https:') navigator.serviceWorker.register('/sw.js').catch(() => {});
+  let installEvt = null;
+  const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  const ios = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  if (!standalone && ios) $('#installApp').hidden = false;
+  addEventListener('beforeinstallprompt', e => { e.preventDefault(); installEvt = e; $('#installApp').hidden = false; });
+  addEventListener('appinstalled', () => { $('#installApp').hidden = true; toast('Готово! SMELL PARFUME теперь на экране телефона'); });
+  $('#installApp').addEventListener('click', e => {
+    e.preventDefault();
+    if (installEvt) { installEvt.prompt(); installEvt.userChoice.finally(() => { installEvt = null; }); return; }
+    toast('Нажмите «Поделиться» ⬆️ внизу Safari → «На экран „Домой“»', false, 7000);
   });
 })();
 </script>

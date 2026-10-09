@@ -321,7 +321,7 @@
     $$('.tab[data-tab]').forEach(t => t.classList.toggle('active', t.dataset.tab === S.tab));
     $('#newCount').textContent = newCount || '';
     $('#newCount').style.display = newCount ? '' : 'none';
-    const rc = remindRows(), rn = rc.review.length + rc.repeat.length;
+    const rc = remindRows(), rn = rc.review.length + rc.repeat.length + rc.stock.length + rc.bonus.length;
     $('#remindCount').textContent = rn || '';
     $('#remindCount').style.display = rn ? '' : 'none';
     ({ dash: renderDash, orders: renderOrders, products: renderProducts, clients: renderClients, remind: renderRemind, promos: renderPromos, settings: renderSettings }[S.tab] || renderDash)();
@@ -785,14 +785,25 @@
       const day = o.date.slice(0, 10), c = clients[o.phone];
       return day <= daysAgo(pd) && day >= daysAgo(pd + 150) && !(c && c.reminded && c.reminded.slice(0, 10) >= day);
     }).sort((a, b) => a.date.localeCompare(b.date));
-    return { review: review, repeat: repeat };
+    // Ждали аромат, и он появился в наличии
+    const inStock = new Set(d.products.filter(p => p.in_stock).map(p => p.id));
+    const waits = (d.waitlist || []).filter(w => !w.notified);
+    const stock = waits.filter(w => inStock.has(w.product_id));
+    const waitingOut = {};
+    waits.filter(w => !inStock.has(w.product_id)).forEach(w => { waitingOut[w.product] = (waitingOut[w.product] || 0) + 1; });
+    // Друг купил по коду — бонус-промокод создан, осталось сообщить владельцу кода
+    const bonus = d.orders.filter(o => o.ref_bonus && !o.ref_sent).map(o => {
+      const p = d.promos.find(x => x.code === o.ref_bonus), c = p && clients[p.phone];
+      return p ? { order: o, code: p.code, value: p.value, phone: p.phone, name: c ? c.name : '', surname: c ? c.surname : '' } : null;
+    }).filter(Boolean);
+    return { review: review, repeat: repeat, stock: stock, waitingOut: waitingOut, bonus: bonus };
   }
   const aromasOf = o => [...new Set((o.items || []).filter(it => !it.gift).map(it => it.name))].join(', ') || 'аромат';
   // Подставляем {имя} {аромат} {ссылка} {скидка}; без имени «Здравствуйте, {имя}!» превращается в «Здравствуйте!»
   function fillText(tpl, o, extra) {
     const name = (o.name || '').trim();
     return tpl.replace(/,?\s*\{имя\}/g, name ? ', ' + name : '').replace(/\{аромат\}/g, aromasOf(o))
-      .replace(/\{ссылка\}/g, extra.link || '').replace(/\s*\{скидка\}/g, extra.loy ? ' ' + extra.loy : '').trim();
+      .replace(/\{ссылка\}/g, extra.link || '').replace(/\{код\}/g, extra.code || '').replace(/\s*\{скидка\}/g, extra.loy ? ' ' + extra.loy : '').trim();
   }
   function loyaltyNote(phone) {
     const s = S.data.settings, every = Math.floor(Number(s.loyalty_every) || 0), pct = Number(s.loyalty_percent) || 0, min = Number(s.loyalty_min) || 0;
@@ -804,33 +815,64 @@
   }
   const DEF_REVIEW = 'Здравствуйте, {имя}! Это SMELL PARFUME 🌿 Как вам {аромат}? Будем очень благодарны за короткий отзыв — это займёт минуту: {ссылка}';
   const DEF_REPEAT = 'Здравствуйте, {имя}! Это SMELL PARFUME 🌿 Недавно вы брали {аромат} — наверное, он уже заканчивается. Повторим или подберём что-то новое? {скидка}\nКаталог: https://smellparfume.github.io';
+  const DEF_NOTIFY = 'Здравствуйте, {имя}! Это SMELL PARFUME 🌿 {аромат} снова в наличии 🎉 Вы просили сообщить. Заказать можно здесь: {ссылка}';
+  const DEF_REF = 'Здравствуйте, {имя}! Это SMELL PARFUME 🌿 Ваш друг сделал заказ по вашему коду — спасибо! 🎁 Дарим вам скидку {скидка} на следующий заказ: промокод {код} (действует 6 месяцев). Каталог: https://smellparfume.github.io';
+  const WA_BTN = '<button class="btn btn-small wa-like" data-rsend style="background:#25d366;border-color:#25d366;color:#0b2e17">Написать в WhatsApp</button><button class="btn btn-small" data-rskip>Уже написал / пропустить</button>';
 
   function renderRemind() {
     const d = S.data, s = d.settings, rc = remindRows();
     const ago = o => Math.round((Date.parse(today()) - Date.parse(o.date.slice(0, 10))) / 864e5) + ' дн. назад';
+    const stockRow = w => `<div class="order" data-wphone="${esc(w.phone)}" data-wpid="${esc(w.product_id)}" data-rkind="stock">
+        <div class="top"><b>${esc(w.name || 'Без имени')}</b><span class="muted">${phoneFmt(w.phone)}</span><span class="muted" style="margin-left:auto">ждёт с ${ruDate(w.date.slice(0, 10))}</span></div>
+        <div class="items">${esc(w.product)}</div><div class="actions">${WA_BTN}</div></div>`;
+    const bonusRow = b => `<div class="order" data-rnum="${esc(b.order.number)}" data-rkind="bonus">
+        <div class="top"><b>${esc([b.name, b.surname].filter(Boolean).join(' ') || 'Без имени')}</b><span class="muted">${phoneFmt(b.phone)}</span><span class="muted" style="margin-left:auto">друг: ${esc(b.order.name)} · заказ № ${esc(b.order.number)}</span></div>
+        <div class="items">Бонус: промокод <b>${esc(b.code)}</b> на ${b.value}%</div><div class="actions">${WA_BTN}</div></div>`;
+    const out = Object.entries(rc.waitingOut).sort((a, b) => b[1] - a[1]);
     const row = (o, kind) => `<div class="order" data-rnum="${esc(o.number)}" data-rkind="${kind}">
         <div class="top"><b>${esc([o.name, o.surname].filter(Boolean).join(' ') || 'Без имени')}</b><span class="muted">${phoneFmt(o.phone)}</span><span class="muted" style="margin-left:auto">${kind === 'review' ? 'заказ № ' + esc(o.number) + ' · ' : 'последняя покупка · '}${ruDate(o.date.slice(0, 10))} (${ago(o)})</span></div>
         <div class="items">${esc(aromasOf(o))}</div>
-        <div class="actions"><button class="btn btn-small wa-like" data-rsend style="background:#25d366;border-color:#25d366;color:#0b2e17">Написать в WhatsApp</button><button class="btn btn-small" data-rskip>Уже написал / пропустить</button></div>
+        <div class="actions">${WA_BTN}</div>
       </div>`;
     $('#main').innerHTML = head('Напомнить') + `
       <p class="hint" style="margin-top:-8px">Кнопка откроет WhatsApp с готовым текстом — останется нажать «Отправить». Клиент сразу уйдёт из списка. Тексты и сроки — в «Настройках».</p>
+      ${rc.stock.length ? `<div class="panel"><h2>Аромат снова в наличии <small>эти клиенты просили сообщить</small></h2>${rc.stock.map(stockRow).join('')}</div>` : ''}
+      ${rc.bonus.length ? `<div class="panel"><h2>Бонус за друга <small>друг купил по их коду — бонус уже создан</small></h2>${rc.bonus.map(bonusRow).join('')}</div>` : ''}
+      ${out.length ? `<div class="panel"><h2>Ждут ароматы, которых нет <small>сообщим, когда отметите «В наличии»</small></h2>
+        <div class="items">${out.map(x => `${esc(x[0])} — <b>${x[1]}</b>`).join('<br>')}</div></div>` : ''}
       <div class="panel"><h2>Попросить отзыв <small>через ${Number(s.review_days) || 3} дн. после продажи</small></h2>
         ${rc.review.map(o => row(o, 'review')).join('') || '<div class="empty">Пока некого — список пополнится после продаж</div>'}</div>
       <div class="panel"><h2>Пора повторить покупку <small>через ${Number(s.repeat_days) || 30} дн. после последней покупки</small></h2>
         ${rc.repeat.map(o => row(o, 'repeat')).join('') || '<div class="empty">Пока некого</div>'}</div>`;
     $('#main').onclick = e => {
-      const card = e.target.closest('[data-rnum]');
+      const card = e.target.closest('[data-rkind]');
       if (!card || !e.target.closest('[data-rsend],[data-rskip]')) return;
-      const D = S.data, st = D.settings, o = D.orders.find(x => x.number === card.dataset.rnum), kind = card.dataset.rkind;
+      const D = S.data, st = D.settings, kind = card.dataset.rkind, send = !!e.target.closest('[data-rsend]');
+      const now = today() + ' ' + new Date().toLocaleTimeString('ru-RU', { timeZone: 'Asia/Almaty', hour: '2-digit', minute: '2-digit' });
+      const wa = (phone, text) => window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(text), '_blank', 'noopener');
+      if (kind === 'stock') {
+        const ph = card.dataset.wphone, pid = card.dataset.wpid, list = (D.waitlist || []).filter(w => w.phone === ph && w.product_id === pid && !w.notified);
+        if (!list.length) return;
+        if (send) wa(ph, fillText(st.notify_text || DEF_NOTIFY, { name: list[0].name, items: [{ name: list[0].product }] }, { link: 'https://smellparfume.github.io/#p-' + pid }));
+        list.forEach(w => { w.notified = now; });
+        mutate('mark_notified', { phone: ph, product_id: pid });
+        return render();
+      }
+      const o = D.orders.find(x => x.number === card.dataset.rnum);
       if (!o) return;
-      if (e.target.closest('[data-rsend]')) {
+      if (kind === 'bonus') {
+        const b = remindRows().bonus.find(x => x.order === o);
+        if (b && send) wa(b.phone, fillText(st.ref_text || DEF_REF, { name: b.name, items: [] }, { code: b.code, loy: b.value + '%' }));
+        o.ref_sent = now;
+        mutate('mark_ref_sent', { number: o.number });
+        return render();
+      }
+      if (send) {
         const text = kind === 'review'
           ? fillText(st.review_text || DEF_REVIEW, o, { link: 'https://smellparfume.github.io/?otzyv=' + o.number })
           : fillText(st.repeat_text || DEF_REPEAT, o, { loy: loyaltyNote(o.phone) });
-        window.open('https://wa.me/' + o.phone + '?text=' + encodeURIComponent(text), '_blank', 'noopener');
+        wa(o.phone, text);
       }
-      const now = today() + ' ' + new Date().toLocaleTimeString('ru-RU', { timeZone: 'Asia/Almaty', hour: '2-digit', minute: '2-digit' });
       if (kind === 'review') { o.review_asked = now; mutate('mark_review_asked', { number: o.number }); }
       else { const c = D.clients.find(x => x.phone === o.phone); if (c) c.reminded = now; mutate('mark_reminded', { phone: o.phone }); }
       render();
@@ -842,7 +884,8 @@
     c = c || { phone: '', name: '', surname: '', notes: '', nOrders: 0, spent: 0, last: '', products: {} };
     const orders = isNew ? [] : S.data.orders.filter(o => o.phone === c.phone);
     const fav = Object.entries(c.products).sort((a, b) => b[1] - a[1]).slice(0, 5);
-    const promos = isNew ? [] : S.data.promos.filter(p => p.phone === c.phone);
+    const promos = isNew ? [] : S.data.promos.filter(p => p.phone === c.phone || p.ref_owner === c.phone)
+      .map(p => p.ref_owner ? Object.assign({}, p, { type: '%', value: Number(S.data.settings.ref_percent) || 0, label: 'код для друзей · привёл ' + p.used }) : p);
     openDlg(`<h2>${isNew ? 'Новый клиент' : esc((c.name + ' ' + c.surname).trim() || phoneFmt(c.phone))}<button class="x" data-x>×</button></h2>
       ${isNew ? '' : `<div class="stat-line"><span>Заказов: <b>${c.nOrders}</b></span><span>Потратил: <b>${money(c.spent)}</b></span><span>Последний: <b>${c.last ? ruDate(c.last.slice(0, 10)) : '—'}</b></span><span>С нами с: <b>${ruDate((c.created || '').slice(0, 10)) || '—'}</b></span></div>`}
       <div class="grid3">
@@ -853,7 +896,7 @@
       <label class="field"><span>Заметки</span><textarea class="textarea" name="notes" placeholder="Предпочтения, день рождения, что понравилось…">${esc(c.notes)}</textarea></label>
       ${fav.length ? `<div class="field"><span>Любимые ароматы</span><div class="chips">${fav.map(f => `<span class="chip" style="pointer-events:none">${esc(f[0])} · ${fmtNum(f[1])} мл</span>`).join('')}</div></div>` : ''}
       ${orders.length ? `<div class="field"><span>История заказов</span><div class="tbl-wrap"><table><tbody>${orders.map(o => `<tr><td>№ ${esc(o.number)}<br><small class="muted">${ruDate(o.date)}</small></td><td style="font-size:12px" class="muted">${esc(o.items.map(i => i.name + ' ' + fmtNum(i.ml) + ' мл').join(', '))}</td><td class="r">${money(o.total)}<br><span class="status ${STATUS_CLS[o.status] || ''}">${esc(o.status)}</span></td></tr>`).join('')}</tbody></table></div></div>` : ''}
-      ${promos.length ? `<div class="field"><span>Промокоды клиента</span><div class="chips">${promos.map(p => `<span class="chip" style="pointer-events:none">${esc(p.code)} · ${p.type === '%' ? p.value + '%' : money(p.value)}${p.used ? ' · использован' : ''}</span>`).join('')}</div></div>` : ''}
+      ${promos.length ? `<div class="field"><span>Промокоды клиента</span><div class="chips">${promos.map(p => `<span class="chip" style="pointer-events:none">${esc(p.code)} · ${p.type === '%' ? p.value + '%' : money(p.value)}${p.label ? ' · ' + p.label : p.used ? ' · использован' : ''}</span>`).join('')}</div></div>` : ''}
       ${isNew ? '' : `<div class="panel" style="margin:0;display:grid;gap:10px">
         <b>Выдать промокод</b>
         <div class="grid3">
@@ -916,19 +959,22 @@
   function renderPromos() {
     const d = S.data, t = today();
     const clientName = ph => { const c = d.clients.find(x => x.phone === ph); return c ? (c.name + ' ' + c.surname).trim() || phoneFmt(ph) : phoneFmt(ph); };
-    $('#main').innerHTML = head('Промокоды', '<button class="btn btn-accent btn-small" id="addPromo">+ Промокод</button>') + `
-      <div class="panel" style="padding:6px 14px"><div class="tbl-wrap"><table>
-        <thead><tr><th>Код</th><th>Скидка</th><th>До</th><th class="r">Исп.</th><th>Для кого</th><th class="r">Активен</th></tr></thead>
-        <tbody>${d.promos.map(p => {
-          const expired = p.until && p.until < t;
-          const exhausted = p.limit !== '' && p.used >= p.limit;
-          return `<tr class="click" data-code="${esc(p.code)}" style="${expired || exhausted || !p.active ? 'opacity:.5' : ''}"><td><b>${esc(p.code)}</b>${p.comment ? `<br><small class="muted">${esc(p.comment)}</small>` : ''}</td>
-            <td>${p.type === '%' ? p.value + '%' : money(p.value)}</td><td>${p.until ? ruDate(p.until) : '∞'}${expired ? ' <small style="color:var(--danger)">истёк</small>' : ''}</td>
-            <td class="r">${p.used}${p.limit !== '' ? ' / ' + p.limit : ''}</td><td>${p.phone ? esc(clientName(p.phone)) : 'все'}</td>
+    const row = p => {
+      const expired = p.until && p.until < t;
+      const exhausted = p.limit !== '' && p.used >= p.limit;
+      return `<tr class="click" data-code="${esc(p.code)}" style="${expired || exhausted || !p.active ? 'opacity:.5' : ''}"><td><b>${esc(p.code)}</b>${p.comment ? `<br><small class="muted">${esc(p.comment)}</small>` : ''}</td>
+            <td>${p.ref_owner ? (Number(d.settings.ref_percent) || 0) + '%' : p.type === '%' ? p.value + '%' : money(p.value)}</td><td>${p.until ? ruDate(p.until) : '∞'}${expired ? ' <small style="color:var(--danger)">истёк</small>' : ''}</td>
+            <td class="r">${p.used}${p.limit !== '' ? ' / ' + p.limit : ''}</td><td>${p.ref_owner ? 'друзьям ' + esc(clientName(p.ref_owner)) : p.phone ? esc(clientName(p.phone)) : 'все'}</td>
             <td class="r"><label class="switch" data-ptoggle><input type="checkbox" ${p.active ? 'checked' : ''}><span></span></label></td></tr>`;
-        }).join('') || '<tr><td colspan="6" class="empty">Промокодов пока нет</td></tr>'}</tbody>
-      </table></div></div>
-      <p class="hint">Персональный промокод удобнее выдавать из карточки клиента — сразу откроется WhatsApp с сообщением.</p>`;
+    };
+    const table = (list, empty) => `<div class="tbl-wrap"><table>
+        <thead><tr><th>Код</th><th>Скидка</th><th>До</th><th class="r">Исп.</th><th>Для кого</th><th class="r">Активен</th></tr></thead>
+        <tbody>${list.map(row).join('') || `<tr><td colspan="6" class="empty">${empty}</td></tr>`}</tbody></table></div>`;
+    const refs = d.promos.filter(p => p.ref_owner);
+    $('#main').innerHTML = head('Промокоды', '<button class="btn btn-accent btn-small" id="addPromo">+ Промокод</button>') + `
+      <div class="panel" style="padding:6px 14px">${table(d.promos.filter(p => !p.ref_owner), 'Промокодов пока нет')}</div>
+      <p class="hint">Персональный промокод удобнее выдавать из карточки клиента — сразу откроется WhatsApp с сообщением.</p>
+      ${refs.length ? `<details class="panel" style="padding:12px 14px"><summary style="cursor:pointer"><b>Коды «Приведи друга»</b> <span class="muted">· ${refs.length} · создаются сами после первого заказа клиента; «Исп.» — сколько друзей купили</span></summary>${table(refs, '')}</details>` : ''}`;
     $('#addPromo').addEventListener('click', () => promoEditor(null));
     $$('tr[data-code]').forEach(tr => tr.addEventListener('click', async e => {
       const p = d.promos.find(x => x.code === tr.dataset.code);
@@ -1013,6 +1059,15 @@
           ${F('repeat_days', 'Напоминать о повторной покупке через, дней')}
           ${F('review_text', 'Текст просьбы об отзыве', 'textarea', 'Подставятся сами: {имя} {аромат} {ссылка}')}
           ${F('repeat_text', 'Текст напоминания о покупке', 'textarea', 'Подставятся сами: {имя} {аромат} {скидка} — «{скидка}» сообщит о скидке за N-й заказ, если она близко')}
+          ${F('notify_text', 'Текст «Аромат снова в наличии»', 'textarea', 'Подставятся сами: {имя} {аромат} {ссылка}')}
+          <h2 class="full" style="margin:10px 0 0">Приведи друга</h2>
+          ${F('ref_percent', 'Скидка другу на первый заказ, %', 'text', 'Пусто или 0 — программа выключена. Код клиент получает после своего заказа')}
+          ${F('ref_bonus_percent', 'Бонус тому, кто привёл, %', 'text', 'Личный промокод на один заказ, действует 6 месяцев')}
+          ${F('ref_min', 'Бонус, если друг купил ароматов от, ₸', 'text', 'Бонус создаётся, когда заказ друга отмечен «Продано»')}
+          ${F('ref_text', 'Текст сообщения о бонусе', 'textarea', 'Подставятся сами: {имя} {код} {скидка}')}
+          <h2 class="full" style="margin:10px 0 0">Хиты</h2>
+          ${F('hits_count', 'Сколько ароматов отмечать «🔥 Хит»', 'text', 'Самые продаваемые по заказам «Продано» (нужно хотя бы 2 заказа). 0 — выключить')}
+          ${F('hits_days', 'Считать продажи за последние, дней')}
           <div class="row-actions full"><button class="btn btn-accent" id="saveSettings" type="button">Сохранить</button></div>
         </form>
       </div>
