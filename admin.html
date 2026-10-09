@@ -40,6 +40,9 @@
     .head h1 { font-size: 26px; }
     .order .actions .btn, .order .actions a.btn { min-height: 42px; padding-left: 14px; padding-right: 14px; }
     .chip { min-height: 36px; }
+    .set-nav { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 8px; margin-bottom: 14px; }
+    .set-nav button { min-width: 0; white-space: normal; line-height: 1.25; min-height: 46px; border-radius: 12px; justify-content: flex-start; text-align: left; font-size: 14px; }
+    @media (max-width: 600px) { .set-nav { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); } .set-nav button { font-size: 13px; padding: 8px 10px; } }
     .prod-row { grid-template-columns: 44px 1fr auto; row-gap: 6px; }
     .prod-row .th { width: 44px; height: 44px; }
     .prod-row .stk { grid-column: 2 / 3; justify-content: flex-start; }
@@ -1465,7 +1468,8 @@
     const d = S.data, s = d.settings;
     const F = (k, label, type, hint) => `<label class="field ${type === 'textarea' ? 'full' : ''}"><span>${label}</span>${type === 'textarea' ? `<textarea class="textarea" name="${k}" style="min-height:140px">${esc(s[k] || '')}</textarea>` : `<input class="input" name="${k}" value="${esc(s[k] || '')}">`}${hint ? `<small class="hint">${hint}</small>` : ''}</label>`;
     $('#main').innerHTML = head('Настройки') + `
-      <div class="panel"><h2>Магазин</h2>
+      <div class="set-nav">${SET_GROUPS.map(g => `<button class="chip" data-sgo="${g[0]}">${g[1]}</button>`).join('')}</div>
+      <div class="panel" id="setFormPanel"><h2 id="setTitle">Магазин</h2>
         <form id="setForm" class="grid2">
           ${F('whatsapp', 'WhatsApp для заказов', 'text', 'Только цифры, начиная с 7')}
           ${F('instagram', 'Instagram', 'text', 'Ник без @')}
@@ -1503,6 +1507,7 @@
           ${F('ref_bonus_percent', 'Бонус тому, кто привёл, %', 'text', 'Личный промокод на один заказ, действует 6 месяцев')}
           ${F('ref_min', 'Бонус, если друг купил ароматов от, ₸', 'text', 'Бонус создаётся, когда заказ друга отмечен «Продано»')}
           ${F('ref_text', 'Текст сообщения о бонусе', 'textarea', 'Подставятся сами: {имя} {код} {скидка}')}
+          <h2 class="full" style="margin:10px 0 0">День рождения</h2>
           ${F('bday_days', 'Напоминать о дне рождения за, дней', 'text', 'Пусто — за 3 дня. Список — во вкладке «Напомнить»')}
           ${F('bday_percent', 'Скидка в день рождения, %', 'text', 'Пусто — 10%. Промокод создаётся сам на 14 дней')}
           ${F('bday_text', 'Поздравление с днём рождения', 'textarea', 'Подставятся сами: {имя} {скидка} {код}')}
@@ -1520,7 +1525,7 @@
           <div class="row-actions full"><button class="btn btn-accent" id="saveSettings" type="button">Сохранить</button></div>
         </form>
       </div>
-      <div class="cols">
+      <div class="cols" data-sg="catalog">
         <div class="panel"><h2>Разделы каталога</h2>
           <div class="list-edit" id="secList">${d.sections.map(secRow).join('')}</div>
           <div class="row-actions"><button class="btn btn-small" id="addSec" style="margin-right:auto">+ Раздел</button><button class="btn btn-accent btn-small" id="saveSec">Сохранить</button></div>
@@ -1531,28 +1536,28 @@
           <div class="row-actions"><button class="btn btn-small" id="addFaq" style="margin-right:auto">+ Вопрос</button><button class="btn btn-accent btn-small" id="saveFaq">Сохранить</button></div>
         </div>
       </div>
-      <div class="panel"><h2>Наборы-пробники <small>скидка действует, только если в заказе весь набор</small></h2>
+      <div class="panel" data-sg="catalog"><h2>Наборы-пробники <small>скидка действует, только если в заказе весь набор</small></h2>
         <div class="list-edit" id="setsList">${(d.sets || []).map(setRow).join('')}</div>
         <div class="row-actions"><button class="btn btn-small" id="addSet" style="margin-right:auto">+ Набор</button><button class="btn btn-accent btn-small" id="saveSets">Сохранить наборы</button></div>
       </div>
-      <div class="panel"><h2>Отзывы <small>показываются на сайте, если отмечено «видно»</small></h2>
+      <div class="panel" data-sg="reviews"><h2>Отзывы <small>показываются на сайте, если отмечено «видно»</small></h2>
         <div class="faq-edit list-edit" id="revList">${(d.reviews || []).map(revRow).join('')}</div>
         <div class="row-actions"><button class="btn btn-small" id="addRev" style="margin-right:auto">+ Отзыв</button><button class="btn btn-accent btn-small" id="saveRev">Сохранить отзывы</button></div>
         <p class="hint">Публикуйте только настоящие отзывы и с согласия автора. Фото — ссылка на картинку (например, скриншот, загруженный на Google Диск).</p>
       </div>
-      <div class="panel" id="bkPanel">${backupHtml()}</div>
-      <div class="panel"><h2>Звук новых заказов</h2>
+      <div class="panel" id="bkPanel" data-sg="system">${backupHtml()}</div>
+      <div class="panel" data-sg="system"><h2>Звук новых заказов</h2>
         <label class="check"><input type="checkbox" id="soundOn" ${ls.get('mute') === '1' ? '' : 'checked'}> Звук и уведомление, когда приходит новый заказ (пока админка открыта)</label>
         <p class="hint">Проверка — раз в минуту. Браузер разрешает звук после первого нажатия в админке. <button class="btn btn-small" id="testBeep" type="button">Проверить звук</button></p>
       </div>
-      <div class="panel"><h2>Смена пароля</h2>
+      <div class="panel" data-sg="system"><h2>Смена пароля</h2>
         <div class="grid3">
           <input class="input" type="password" id="oldPass" placeholder="Текущий пароль" autocomplete="current-password">
           <input class="input" type="password" id="newPass" placeholder="Новый пароль (от 6 символов)" autocomplete="new-password">
           <button class="btn" id="changePass">Сменить</button>
         </div>
       </div>
-      <button class="btn" id="logout2">Выйти из админки</button>`;
+      <button class="btn" id="logout2" data-sg="system">Выйти из админки</button>`;
     $('#saveSettings').addEventListener('click', async e => {
       const vals = {};
       $$('#setForm [name]').forEach(i => { vals[i.name] = i.value.trim(); });
@@ -1630,6 +1635,35 @@
     $('#soundOn').addEventListener('change', e => { ls.set('mute', e.target.checked ? null : '1'); toast(e.target.checked ? 'Звук включён' : 'Звук выключен'); });
     $('#testBeep').addEventListener('click', () => setTimeout(beep, 50));
     bindBackup();
+    settingsNav();
+  }
+
+  // Настройки разбиты на подразделы: вверху кнопки, показывается только выбранный раздел.
+  const SET_GROUPS = [['shop', '🏪 Магазин и доставка'], ['promo', '🎁 Скидки и бонусы'], ['msg', '💬 Сообщения клиентам'],
+    ['stock', '📦 Склад и хиты'], ['catalog', '📚 Разделы, вопросы, наборы'], ['reviews', '⭐ Отзывы'], ['system', '🔒 Копии, звук, пароль']];
+  const SET_H2 = { 'Доставка по городу': 'shop', 'Пробник в подарок': 'promo', 'Собери свой набор': 'promo', 'Постоянным клиентам': 'promo',
+    'Приведи друга': 'promo', 'Напоминания': 'msg', 'День рождения': 'msg', 'Сообщения по заказу': 'msg', 'Остатки и закупка': 'stock', 'Хиты': 'stock' };
+  function settingsNav() {
+    let cur = 'shop';
+    [...$('#setForm').children].forEach(el => {
+      if (el.tagName === 'H2') cur = SET_H2[el.textContent.trim()] || cur;
+      if (!el.classList.contains('row-actions')) el.dataset.sf = cur;
+    });
+    const show = g => {
+      S.setGroup = g; ls.set('setGroup', g);
+      $$('[data-sgo]').forEach(b => b.classList.toggle('active', b.dataset.sgo === g));
+      let any = false;
+      $$('#setForm [data-sf]').forEach(el => { const on = el.dataset.sf === g; el.style.display = on ? '' : 'none'; any = any || on; });
+      $('#setFormPanel').style.display = any ? '' : 'none';
+      $('#setTitle').textContent = SET_GROUPS.find(x => x[0] === g)[1].replace(/^\S+\s/, '');
+      // первый подзаголовок раздела дублирует заголовок панели — прячем
+      const first = $$('#setForm [data-sf]').find(el => el.dataset.sf === g);
+      if (first && first.tagName === 'H2') first.style.display = 'none';
+      $$('#main [data-sg]').forEach(el => { el.style.display = el.dataset.sg === g ? '' : 'none'; });
+    };
+    $$('[data-sgo]').forEach(b => b.addEventListener('click', () => { show(b.dataset.sgo); window.scrollTo(0, 0); }));
+    const saved = S.setGroup || ls.get('setGroup');
+    show(SET_GROUPS.some(x => x[0] === saved) ? saved : 'shop');
   }
 
   // Резервная копия: вся таблица копируется в папку на Google Диске (хранятся последние 8 копий).
