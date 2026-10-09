@@ -1345,14 +1345,14 @@
     const s = (state.data && state.data.store) || {};
     return { every: Math.floor(Number(s.loyalty_every) || 0), percent: Math.min(Number(s.loyalty_percent) || 0, 100), min: Number(s.loyalty_min) || 0, max: Number(s.loyalty_max) || 0 };
   }
+  // Сервер сообщает только «положена ли скидка на этот заказ» (turn) — без числа заказов клиента.
   function loyalty() {
     const r = loyaltyRules(), L = state.loyalty;
-    if (r.every < 2 || r.percent <= 0 || !L || L.count === null) return { amount: 0, on: false };
-    const n = L.count + 1, base = state.cart.filter(l => !l.gift).reduce((a, l) => a + lineTotal(l), 0);
-    const turn = n % r.every === 0;
-    let amount = turn && base >= r.min ? Math.round(base * r.percent / 100) : 0;
+    if (r.every < 2 || r.percent <= 0 || !L || L.turn === null) return { amount: 0, on: false };
+    const base = state.cart.filter(l => !l.gift).reduce((a, l) => a + lineTotal(l), 0);
+    let amount = L.turn && base >= r.min ? Math.round(base * r.percent / 100) : 0;
     if (r.max > 0) amount = Math.min(amount, r.max);
-    return { amount: amount, on: true, n: n, turn: turn, rules: r };
+    return { amount: amount, on: true, turn: L.turn, rules: r };
   }
   // Действует бо́льшая из скидок: промокод или скидка постоянного клиента.
   function discount() { return Math.max(promoDiscount(), loyalty().amount); }
@@ -1361,17 +1361,19 @@
     const L = loyalty();
     if (!L.on) return '';
     const r = L.rules;
-    if (L.amount) return `<div class="loy on">🎁 Это ваш ${L.n}-й заказ — скидка ${r.percent}%${promoDiscount() ? ' (она больше промокода)' : ''}</div>`;
-    if (L.turn) return `<div class="loy">🎁 Это ваш ${L.n}-й заказ — скидка ${r.percent}% действует при заказе ароматов от ${money(r.min)}</div>`;
-    return `<div class="loy">Каждый ${r.every}-й заказ — со скидкой ${r.percent}%. Этот заказ будет ${L.n}-м <small>(учитываются подтверждённые заказы от ${money(r.min)})</small></div>`;
+    if (L.amount) return `<div class="loy on">🎁 Этот заказ — со скидкой постоянного клиента ${r.percent}%${promoDiscount() ? ' (она больше промокода)' : ''}</div>`;
+    if (L.turn) return `<div class="loy">🎁 Этот заказ — со скидкой постоянного клиента ${r.percent}% при заказе ароматов от ${money(r.min)}</div>`;
+    return `<div class="loy">Каждый ${r.every}-й заказ — со скидкой ${r.percent}% <small>(учитываются подтверждённые заказы от ${money(r.min)})</small></div>`;
   }
   async function fetchLoyalty(phone) {
     if (!API || loyaltyRules().every < 2 || !/^7\d{10}$/.test(phone)) return;
     if (state.loyalty && state.loyalty.phone === phone) return;
-    state.loyalty = { phone: phone, count: null };
+    state.loyalty = { phone: phone, turn: null };
     try {
       const r = await post({ action: 'loyalty', phone: phone });
-      if (r.ok && state.loyalty && state.loyalty.phone === phone) state.loyalty.count = r.count;
+      // typeof count — ответ старой версии сервера, пока новая не выпущена.
+      const turn = typeof r.turn === 'boolean' ? r.turn : typeof r.count === 'number' ? (r.count + 1) % loyaltyRules().every === 0 : null;
+      if (r.ok && state.loyalty && state.loyalty.phone === phone) state.loyalty.turn = turn;
     } catch (e) { /* без скидки — не страшно */ }
     if ($('#cartSum')) { $('#cartSum').innerHTML = sumHtml(); $('#loyBox').innerHTML = loyaltyHtml(); }
   }
@@ -1662,7 +1664,7 @@
     if (gift) lines.push(`🎁 Подарок: ${gift.brand} ${gift.name} — ${sampleRules().ml} мл`);
     const st = subtotal(), disc = discount();
     let text = `Здравствуйте! Заказ № ${number} с сайта:\n\n${lines.join('\n')}\n\n`;
-    if (disc) text += `Сумма: ${money(st)}\n${loyaltyWins() ? 'Скидка постоянного клиента (' + loyalty().n + '-й заказ)' : (state.promo.ref ? 'Код друга ' : 'Промокод ') + state.promo.code}: −${money(disc)}\n`;
+    if (disc) text += `Сумма: ${money(st)}\n${loyaltyWins() ? 'Скидка постоянного клиента' : (state.promo.ref ? 'Код друга ' : 'Промокод ') + state.promo.code}: −${money(disc)}\n`;
     if (dv.cost) text += `Доставка: ${money(dv.cost)}\n`;
     text += `Итого: ${money(st - disc + (dv.cost || 0))}\n\n${dvText}\nИмя: ${data.name.trim()} ${data.surname.trim()}`.trim();
     if (data.comment.trim()) text += `\nКомментарий: ${data.comment.trim()}`;

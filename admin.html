@@ -194,8 +194,19 @@
     get(k) { try { return localStorage.getItem('spa_' + k); } catch (e) { return null; } },
     set(k, v) { try { v == null ? localStorage.removeItem('spa_' + k) : localStorage.setItem('spa_' + k, v); } catch (e) {} }
   };
+  // Ключ входа и копия данных: на своём устройстве — в localStorage (не нужно входить каждый раз),
+  // на чужом («не запоминать») — в sessionStorage, который браузер стирает при закрытии вкладки.
+  const vault = {
+    get(k) { try { return sessionStorage.getItem('spa_' + k) || localStorage.getItem('spa_' + k); } catch (e) { return null; } },
+    set(k, v) {
+      try {
+        sessionStorage.removeItem('spa_' + k); localStorage.removeItem('spa_' + k);
+        if (v != null) (S.remember ? localStorage : sessionStorage).setItem('spa_' + k, v);
+      } catch (e) {}
+    }
+  };
 
-  const S = { token: ls.get('token'), data: null, tab: ls.get('tab') || 'dash', period: '30', orderFilter: 'Новый', q: {}, prodFilter: '', clientFilter: '' };
+  const S = { token: vault.get('token'), remember: !!ls.get('token'), data: null, tab: ls.get('tab') || 'dash', period: '30', orderFilter: 'Новый', q: {}, prodFilter: '', clientFilter: '' };
 
   const ICONS = {
     dash: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
@@ -232,7 +243,7 @@
   function applyData(d, silent) {
     S.data = d;
     prepare();
-    try { localStorage.setItem('spa_data', JSON.stringify(d)); } catch (e) { /* переполнено — работаем без кэша */ }
+    vault.set('data', JSON.stringify(d)); // переполнено — vault молча работает без кэша
     if (silent) return;
     if ($('#dlg').open) S.renderAfterDialog = true; else render();
   }
@@ -302,6 +313,8 @@
       <div style="font-family:var(--font-display);font-size:26px">Вход в админку</div>
       ${API ? '' : '<div class="err">Сначала укажите адрес API в файле config.js</div>'}
       <input class="input" type="password" name="password" placeholder="Пароль" autocomplete="current-password" required autofocus>
+      <label class="check" style="text-align:left"><input type="checkbox" name="remember" checked> Это моё устройство — не выходить</label>
+      <div class="hint" style="text-align:left;margin-top:-6px">На чужом телефоне или компьютере снимите галочку — вход сотрётся, когда закроете вкладку.</div>
       <button class="btn btn-primary btn-block">Войти</button>
       <div class="err" id="loginErr">${esc(msg || '')}</div>
     </form></div>`;
@@ -312,7 +325,8 @@
       try {
         const r = await fetch(API, { method: 'POST', body: JSON.stringify({ action: 'login', password: e.target.password.value }) }).then(x => x.json());
         if (!r.ok) throw new Error(r.error);
-        S.token = r.token; ls.set('token', r.token);
+        S.remember = e.target.remember.checked;
+        S.token = r.token; vault.set('token', r.token);
         $('#root').innerHTML = '';
         applyData(r.data);
       } catch (err) {
@@ -323,7 +337,7 @@
   }
   function logout(expired) {
     if (S.token && !expired) api('logout').catch(() => {});
-    S.token = null; ls.set('token', null); ls.set('data', null);
+    S.token = null; vault.set('token', null); vault.set('data', null);
     renderLogin(expired ? 'Сессия истекла — войдите заново' : '');
   }
 
@@ -365,7 +379,7 @@
     if (!S.token) return renderLogin();
     // Сначала мгновенно показываем сохранённые данные, затем тихо подтягиваем свежие.
     let cached = null;
-    try { cached = JSON.parse(ls.get('data') || 'null'); } catch (e) { /* битый кэш */ }
+    try { cached = JSON.parse(vault.get('data') || 'null'); } catch (e) { /* битый кэш */ }
     if (cached) applyData(cached);
     else $('#root').innerHTML = '<div class="center" style="min-height:100vh"><div class="spinner"></div></div>';
     sync.pending++; showSync();
@@ -1557,6 +1571,10 @@
           <button class="btn" id="changePass">Сменить</button>
         </div>
       </div>
+      <div class="panel" data-sg="system"><h2>Потеряли телефон?</h2>
+        <p class="hint">Кнопка выкинет из админки все остальные устройства — на потерянном телефоне админка попросит пароль. Если думаете, что пароль кто-то узнал, лучше сразу смените его выше: смена пароля тоже выкидывает все остальные устройства.</p>
+        <button class="btn" id="logoutAll">Выйти на всех других устройствах</button>
+      </div>
       <button class="btn" id="logout2" data-sg="system">Выйти из админки</button>`;
     $('#saveSettings').addEventListener('click', async e => {
       const vals = {};
@@ -1627,9 +1645,16 @@
     $('#changePass').addEventListener('click', async e => {
       await run(e.target, async () => {
         const r = await api('change_password', { old_password: $('#oldPass').value, new_password: $('#newPass').value });
-        S.token = r.token; ls.set('token', r.token);
+        S.token = r.token; vault.set('token', r.token);
         $('#oldPass').value = $('#newPass').value = '';
       }, 'Пароль изменён');
+    });
+    $('#logoutAll').addEventListener('click', async e => {
+      if (!confirm('Выйти из админки на всех остальных телефонах и компьютерах? Здесь вход сохранится.')) return;
+      await run(e.target, async () => {
+        const r = await api('logout_all');
+        S.token = r.token; vault.set('token', r.token);
+      }, 'Готово: остальные устройства вышли');
     });
     $('#logout2').addEventListener('click', () => logout());
     $('#soundOn').addEventListener('change', e => { ls.set('mute', e.target.checked ? null : '1'); toast(e.target.checked ? 'Звук включён' : 'Звук выключен'); });
