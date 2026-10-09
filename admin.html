@@ -167,7 +167,8 @@
     promos: '<path d="M3 9V5h18v4a3 3 0 0 0 0 6v4H3v-4a3 3 0 0 0 0-6Z"/><path d="M14 5v14" stroke-dasharray="2 2"/>',
     settings: '<circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6a7 7 0 0 0 0 2.4l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2L10 21h4l.5-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2Z"/>'
   };
-  const TABS = [['dash', 'Аналитика'], ['orders', 'Заказы'], ['products', 'Товары'], ['clients', 'Клиенты'], ['promos', 'Промокоды'], ['settings', 'Настройки']];
+  ICONS.remind = '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>';
+  const TABS = [['dash', 'Аналитика'], ['orders', 'Заказы'], ['products', 'Товары'], ['clients', 'Клиенты'], ['remind', 'Напомнить'], ['promos', 'Промокоды'], ['settings', 'Настройки']];
 
   // ───────── API ─────────
   async function api(action, payload) {
@@ -302,7 +303,7 @@
       $('#root').innerHTML = `<div class="app">
         <nav class="side">
           <div class="logo"><img src="assets/logo.jpg" alt=""><b>SMELL<br>PARFUME</b></div>
-          ${TABS.map(t => `<button class="tab" data-tab="${t[0]}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${ICONS[t[0]]}</svg><span>${t[1]}</span>${t[0] === 'orders' ? '<em class="count" id="newCount" style="font-style:normal"></em>' : ''}</button>`).join('')}
+          ${TABS.map(t => `<button class="tab" data-tab="${t[0]}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${ICONS[t[0]]}</svg><span>${t[1]}</span>${t[0] === 'orders' ? '<em class="count" id="newCount" style="font-style:normal"></em>' : t[0] === 'remind' ? '<em class="count" id="remindCount" style="font-style:normal"></em>' : ''}</button>`).join('')}
           <div class="bottom">
             <a class="tab" href="index.html" target="_blank">↗ Открыть сайт</a>
             <button class="tab" id="logoutBtn">Выйти</button>
@@ -320,7 +321,10 @@
     $$('.tab[data-tab]').forEach(t => t.classList.toggle('active', t.dataset.tab === S.tab));
     $('#newCount').textContent = newCount || '';
     $('#newCount').style.display = newCount ? '' : 'none';
-    ({ dash: renderDash, orders: renderOrders, products: renderProducts, clients: renderClients, promos: renderPromos, settings: renderSettings }[S.tab] || renderDash)();
+    const rc = remindRows(), rn = rc.review.length + rc.repeat.length;
+    $('#remindCount').textContent = rn || '';
+    $('#remindCount').style.display = rn ? '' : 'none';
+    ({ dash: renderDash, orders: renderOrders, products: renderProducts, clients: renderClients, remind: renderRemind, promos: renderPromos, settings: renderSettings }[S.tab] || renderDash)();
   }
 
   const head = (title, extra) => `<div class="head"><h1>${title}</h1>${extra || ''}<button class="btn btn-small" data-reload title="Обновить данные">↻</button></div>`;
@@ -467,7 +471,7 @@
       <div class="items">${(o.items.length ? o.items : []).map(it => it.gift
           ? `<div>🎁 ${esc(it.name)}${it.qty > 1 ? ' × ' + it.qty : ''} · ${money(lineSum(it))}</div>`
           : `<div>${esc(it.name)} — ${fmtNum(it.ml)} мл${it.qty > 1 ? ' × ' + it.qty : ''}${it.set ? ` <span class="muted">(набор «${esc(it.set)}»)</span>` : ''} · ${money(lineSum(it))}</div>`).join('') || esc(o.items_text)}
-        ${o.discount ? `<div>Скидка${o.promo ? ' (' + esc(o.promo) + ')' : ''}: −${money(o.discount)}</div>` : ''}
+        ${o.discount ? `<div>Скидка${o.loyalty ? ' постоянного клиента (' + esc(o.loyalty) + ')' : o.promo ? ' (' + esc(o.promo) + ')' : ''}: −${money(o.discount)}</div>` : ''}
         ${o.gift_codes ? `<div style="color:var(--accent)">🎁 Коды сертификатов: <b style="user-select:all">${esc(o.gift_codes)}</b> — отправьте покупателю</div>` : ''}
         ${!o.gift_codes && o.status === 'Продано' && o.items.some(it => it.gift) ? '<div class="muted">🎁 Коды сертификатов создаются…</div>' : ''}
         ${o.comment ? `<div style="color:var(--text)">💬 ${esc(o.comment)}</div>` : ''}</div>
@@ -765,6 +769,74 @@
     $$('tr[data-phone]').forEach(tr => tr.addEventListener('click', () => clientCard(clientRows().find(c => c.phone === tr.dataset.phone))));
   }
 
+  // ───────── Напоминания: отзыв и повторная покупка ─────────
+  const aromaSum = items => (items || []).filter(it => !it.gift).reduce((a, it) => a + lineSum(it), 0);
+  function remindRows() {
+    const d = S.data, s = d.settings;
+    const rd = Number(s.review_days) || 3, pd = Number(s.repeat_days) || 30;
+    const sold = d.orders.filter(o => o.status === 'Продано' && /^7\d{10}$/.test(o.phone));
+    const reviewed = new Set((d.reviews || []).map(r => r.order).filter(Boolean));
+    const review = sold.filter(o => { const day = o.date.slice(0, 10); return !o.review_asked && day <= daysAgo(rd) && day >= daysAgo(rd + 30) && !reviewed.has(o.number); });
+    const last = {};
+    sold.forEach(o => { if (!last[o.phone] || o.date > last[o.phone].date) last[o.phone] = o; });
+    const clients = {};
+    d.clients.forEach(c => { clients[c.phone] = c; });
+    const repeat = Object.values(last).filter(o => {
+      const day = o.date.slice(0, 10), c = clients[o.phone];
+      return day <= daysAgo(pd) && day >= daysAgo(pd + 150) && !(c && c.reminded && c.reminded.slice(0, 10) >= day);
+    }).sort((a, b) => a.date.localeCompare(b.date));
+    return { review: review, repeat: repeat };
+  }
+  const aromasOf = o => [...new Set((o.items || []).filter(it => !it.gift).map(it => it.name))].join(', ') || 'аромат';
+  // Подставляем {имя} {аромат} {ссылка} {скидка}; без имени «Здравствуйте, {имя}!» превращается в «Здравствуйте!»
+  function fillText(tpl, o, extra) {
+    const name = (o.name || '').trim();
+    return tpl.replace(/,?\s*\{имя\}/g, name ? ', ' + name : '').replace(/\{аромат\}/g, aromasOf(o))
+      .replace(/\{ссылка\}/g, extra.link || '').replace(/\s*\{скидка\}/g, extra.loy ? ' ' + extra.loy : '').trim();
+  }
+  function loyaltyNote(phone) {
+    const s = S.data.settings, every = Math.floor(Number(s.loyalty_every) || 0), pct = Number(s.loyalty_percent) || 0, min = Number(s.loyalty_min) || 0;
+    if (every < 2 || pct <= 0) return '';
+    const n = S.data.orders.filter(o => o.status === 'Продано' && o.phone === phone && aromaSum(o.items) >= min).length + 1;
+    if (n % every === 0) return `Кстати, ваш следующий заказ — со скидкой ${pct}% 🎁`;
+    const k = every - n % every;
+    return k <= 2 ? `До заказа со скидкой ${pct}% осталось совсем немного — ещё ${k}.` : '';
+  }
+  const DEF_REVIEW = 'Здравствуйте, {имя}! Это SMELL PARFUME 🌿 Как вам {аромат}? Будем очень благодарны за короткий отзыв — это займёт минуту: {ссылка}';
+  const DEF_REPEAT = 'Здравствуйте, {имя}! Это SMELL PARFUME 🌿 Недавно вы брали {аромат} — наверное, он уже заканчивается. Повторим или подберём что-то новое? {скидка}\nКаталог: https://smellparfume.github.io';
+
+  function renderRemind() {
+    const d = S.data, s = d.settings, rc = remindRows();
+    const ago = o => Math.round((Date.parse(today()) - Date.parse(o.date.slice(0, 10))) / 864e5) + ' дн. назад';
+    const row = (o, kind) => `<div class="order" data-rnum="${esc(o.number)}" data-rkind="${kind}">
+        <div class="top"><b>${esc([o.name, o.surname].filter(Boolean).join(' ') || 'Без имени')}</b><span class="muted">${phoneFmt(o.phone)}</span><span class="muted" style="margin-left:auto">${kind === 'review' ? 'заказ № ' + esc(o.number) + ' · ' : 'последняя покупка · '}${ruDate(o.date.slice(0, 10))} (${ago(o)})</span></div>
+        <div class="items">${esc(aromasOf(o))}</div>
+        <div class="actions"><button class="btn btn-small wa-like" data-rsend style="background:#25d366;border-color:#25d366;color:#0b2e17">Написать в WhatsApp</button><button class="btn btn-small" data-rskip>Уже написал / пропустить</button></div>
+      </div>`;
+    $('#main').innerHTML = head('Напомнить') + `
+      <p class="hint" style="margin-top:-8px">Кнопка откроет WhatsApp с готовым текстом — останется нажать «Отправить». Клиент сразу уйдёт из списка. Тексты и сроки — в «Настройках».</p>
+      <div class="panel"><h2>Попросить отзыв <small>через ${Number(s.review_days) || 3} дн. после продажи</small></h2>
+        ${rc.review.map(o => row(o, 'review')).join('') || '<div class="empty">Пока некого — список пополнится после продаж</div>'}</div>
+      <div class="panel"><h2>Пора повторить покупку <small>через ${Number(s.repeat_days) || 30} дн. после последней покупки</small></h2>
+        ${rc.repeat.map(o => row(o, 'repeat')).join('') || '<div class="empty">Пока некого</div>'}</div>`;
+    $('#main').onclick = e => {
+      const card = e.target.closest('[data-rnum]');
+      if (!card || !e.target.closest('[data-rsend],[data-rskip]')) return;
+      const D = S.data, st = D.settings, o = D.orders.find(x => x.number === card.dataset.rnum), kind = card.dataset.rkind;
+      if (!o) return;
+      if (e.target.closest('[data-rsend]')) {
+        const text = kind === 'review'
+          ? fillText(st.review_text || DEF_REVIEW, o, { link: 'https://smellparfume.github.io/?otzyv=' + o.number })
+          : fillText(st.repeat_text || DEF_REPEAT, o, { loy: loyaltyNote(o.phone) });
+        window.open('https://wa.me/' + o.phone + '?text=' + encodeURIComponent(text), '_blank', 'noopener');
+      }
+      const now = today() + ' ' + new Date().toLocaleTimeString('ru-RU', { timeZone: 'Asia/Almaty', hour: '2-digit', minute: '2-digit' });
+      if (kind === 'review') { o.review_asked = now; mutate('mark_review_asked', { number: o.number }); }
+      else { const c = D.clients.find(x => x.phone === o.phone); if (c) c.reminded = now; mutate('mark_reminded', { phone: o.phone }); }
+      render();
+    };
+  }
+
   function clientCard(c) {
     const isNew = !c;
     c = c || { phone: '', name: '', surname: '', notes: '', nOrders: 0, spent: 0, last: '', products: {} };
@@ -931,6 +1003,16 @@
           ${F('gift_cards', 'Подарочные сертификаты, ₸', 'text', 'Номиналы через запятую: 10000,20000,30000. Пусто — блок скрыт')}
           ${F('about', 'Текст «О нас»', 'textarea')}
           ${F('delivery', 'Доставка', 'textarea')}
+          <h2 class="full" style="margin:10px 0 0">Постоянным клиентам</h2>
+          ${F('loyalty_every', 'Скидка на каждый N-й заказ', 'text', 'Например 5. Пусто или 0 — программа выключена')}
+          ${F('loyalty_percent', 'Размер скидки, %')}
+          ${F('loyalty_min', 'Заказ засчитывается от, ₸', 'text', 'Сумма ароматов без сертификатов. Считаются только заказы «Продано»')}
+          ${F('loyalty_max', 'Скидка не больше, ₸', 'text', 'С промокодом не складывается — действует бо́льшая')}
+          <h2 class="full" style="margin:10px 0 0">Напоминания</h2>
+          ${F('review_days', 'Просить отзыв через, дней')}
+          ${F('repeat_days', 'Напоминать о повторной покупке через, дней')}
+          ${F('review_text', 'Текст просьбы об отзыве', 'textarea', 'Подставятся сами: {имя} {аромат} {ссылка}')}
+          ${F('repeat_text', 'Текст напоминания о покупке', 'textarea', 'Подставятся сами: {имя} {аромат} {скидка} — «{скидка}» сообщит о скидке за N-й заказ, если она близко')}
           <div class="row-actions full"><button class="btn btn-accent" id="saveSettings" type="button">Сохранить</button></div>
         </form>
       </div>
@@ -1022,7 +1104,8 @@
     $('#saveRev').addEventListener('click', () => {
       const list = $$('.fe', revBox).map(r => ({
         name: $('[data-n=name]', r).value.trim(), text: $('[data-n=text]', r).value.trim(), photo: $('[data-n=photo]', r).value.trim(),
-        date: r.dataset.date || today(), visible: $('[data-n=visible]', r).checked
+        date: r.dataset.date || today(), visible: $('[data-n=visible]', r).checked,
+        rating: Number($('[data-n=rating]', r).value) || 5, order: r.dataset.order || '', phone: r.dataset.phone || ''
       })).filter(x => x.name && x.text);
       S.data.reviews = list;
       mutate('save_reviews', { reviews: list }, 'Отзывы сохранены');
@@ -1049,8 +1132,9 @@
     </div>
     <input class="input" data-n="description" value="${esc(s.description)}" placeholder="Описание (одно предложение)">
   </div>`;
-  const revRow = r => `<div class="fe" data-date="${esc(r.date || '')}">
-    <div style="display:flex;gap:8px"><input class="input" data-n="name" value="${esc(r.name)}" placeholder="Имя автора"><label class="check"><input type="checkbox" data-n="visible" ${r.visible ? 'checked' : ''}>видно</label><button class="icon-btn" data-del title="Удалить">✕</button></div>
+  const revRow = r => `<div class="fe" data-date="${esc(r.date || '')}" data-order="${esc(r.order || '')}" data-phone="${esc(r.phone || '')}">
+    ${r.order || !r.visible && r.rating ? `<small class="hint">${!r.visible ? '<b style="color:var(--accent)">Новый, ждёт публикации</b> · ' : ''}${r.order ? 'заказ № ' + esc(r.order) + ' · ' : ''}${ruDate(r.date)}</small>` : ''}
+    <div style="display:flex;gap:8px"><select class="select" data-n="rating" style="width:auto;flex:none" title="Оценка">${[5, 4, 3, 2, 1].map(n => `<option value="${n}" ${(r.rating || 5) === n ? 'selected' : ''}>${'★'.repeat(n)}</option>`).join('')}</select><input class="input" data-n="name" value="${esc(r.name)}" placeholder="Имя автора"><label class="check"><input type="checkbox" data-n="visible" ${r.visible ? 'checked' : ''}>видно</label><button class="icon-btn" data-del title="Удалить">✕</button></div>
     <textarea class="textarea" data-n="text" style="min-height:70px" placeholder="Текст отзыва">${esc(r.text)}</textarea>
     <input class="input" data-n="photo" value="${esc(r.photo)}" placeholder="Ссылка на фото (необязательно)">
   </div>`;
