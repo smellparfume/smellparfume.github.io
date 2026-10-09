@@ -321,7 +321,7 @@
     $$('.tab[data-tab]').forEach(t => t.classList.toggle('active', t.dataset.tab === S.tab));
     $('#newCount').textContent = newCount || '';
     $('#newCount').style.display = newCount ? '' : 'none';
-    const rc = remindRows(), rn = rc.review.length + rc.repeat.length + rc.stock.length + rc.bonus.length;
+    const rc = remindRows(), rn = rc.review.length + rc.repeat.length + rc.stock.length + rc.wish.length + rc.bonus.length;
     $('#remindCount').textContent = rn || '';
     $('#remindCount').style.display = rn ? '' : 'none';
     ({ dash: renderDash, orders: renderOrders, products: renderProducts, clients: renderClients, remind: renderRemind, promos: renderPromos, settings: renderSettings }[S.tab] || renderDash)();
@@ -789,14 +789,16 @@
     const inStock = new Set(d.products.filter(p => p.in_stock).map(p => p.id));
     const waits = (d.waitlist || []).filter(w => !w.notified);
     const stock = waits.filter(w => inStock.has(w.product_id));
+    // «Не нашли аромат?» — без id, аромата нет на сайте
+    const wish = waits.filter(w => !w.product_id);
     const waitingOut = {};
-    waits.filter(w => !inStock.has(w.product_id)).forEach(w => { waitingOut[w.product] = (waitingOut[w.product] || 0) + 1; });
+    waits.filter(w => w.product_id && !inStock.has(w.product_id)).forEach(w => { waitingOut[w.product] = (waitingOut[w.product] || 0) + 1; });
     // Друг купил по коду — бонус-промокод создан, осталось сообщить владельцу кода
     const bonus = d.orders.filter(o => o.ref_bonus && !o.ref_sent).map(o => {
       const p = d.promos.find(x => x.code === o.ref_bonus), c = p && clients[p.phone];
       return p ? { order: o, code: p.code, value: p.value, phone: p.phone, name: c ? c.name : '', surname: c ? c.surname : '' } : null;
     }).filter(Boolean);
-    return { review: review, repeat: repeat, stock: stock, waitingOut: waitingOut, bonus: bonus };
+    return { review: review, repeat: repeat, stock: stock, wish: wish, waitingOut: waitingOut, bonus: bonus };
   }
   const aromasOf = o => [...new Set((o.items || []).filter(it => !it.gift).map(it => it.name))].join(', ') || 'аромат';
   // Подставляем {имя} {аромат} {ссылка} {скидка}; без имени «Здравствуйте, {имя}!» превращается в «Здравствуйте!»
@@ -816,6 +818,7 @@
   const DEF_REVIEW = 'Здравствуйте, {имя}! Это SMELL PARFUME 🌿 Как вам {аромат}? Будем очень благодарны за короткий отзыв — это займёт минуту: {ссылка}';
   const DEF_REPEAT = 'Здравствуйте, {имя}! Это SMELL PARFUME 🌿 Недавно вы брали {аромат} — наверное, он уже заканчивается. Повторим или подберём что-то новое? {скидка}\nКаталог: https://smellparfume.github.io';
   const DEF_NOTIFY = 'Здравствуйте, {имя}! Это SMELL PARFUME 🌿 {аромат} снова в наличии 🎉 Вы просили сообщить. Заказать можно здесь: {ссылка}';
+  const DEF_WISH = 'Здравствуйте, {имя}! Это SMELL PARFUME 🌿 Вы спрашивали про {аромат}. ';
   const DEF_REF = 'Здравствуйте, {имя}! Это SMELL PARFUME 🌿 Ваш друг сделал заказ по вашему коду — спасибо! 🎁 Дарим вам скидку {скидка} на следующий заказ: промокод {код} (действует 6 месяцев). Каталог: https://smellparfume.github.io';
   const WA_BTN = '<button class="btn btn-small wa-like" data-rsend style="background:#25d366;border-color:#25d366;color:#0b2e17">Написать в WhatsApp</button><button class="btn btn-small" data-rskip>Уже написал / пропустить</button>';
 
@@ -825,6 +828,9 @@
     const stockRow = w => `<div class="order" data-wphone="${esc(w.phone)}" data-wpid="${esc(w.product_id)}" data-rkind="stock">
         <div class="top"><b>${esc(w.name || 'Без имени')}</b><span class="muted">${phoneFmt(w.phone)}</span><span class="muted" style="margin-left:auto">ждёт с ${ruDate(w.date.slice(0, 10))}</span></div>
         <div class="items">${esc(w.product)}</div><div class="actions">${WA_BTN}</div></div>`;
+    const wishRow = w => `<div class="order" data-wphone="${esc(w.phone)}" data-wpid="" data-wtext="${esc(w.product)}" data-rkind="wish">
+        <div class="top"><b>${esc(w.name || 'Без имени')}</b><span class="muted">${phoneFmt(w.phone)}</span><span class="muted" style="margin-left:auto">${ruDate(w.date.slice(0, 10))}</span></div>
+        <div class="items">Ищет: <b>${esc(w.product)}</b></div><div class="actions">${WA_BTN}</div></div>`;
     const bonusRow = b => `<div class="order" data-rnum="${esc(b.order.number)}" data-rkind="bonus">
         <div class="top"><b>${esc([b.name, b.surname].filter(Boolean).join(' ') || 'Без имени')}</b><span class="muted">${phoneFmt(b.phone)}</span><span class="muted" style="margin-left:auto">друг: ${esc(b.order.name)} · заказ № ${esc(b.order.number)}</span></div>
         <div class="items">Бонус: промокод <b>${esc(b.code)}</b> на ${b.value}%</div><div class="actions">${WA_BTN}</div></div>`;
@@ -837,6 +843,7 @@
     $('#main').innerHTML = head('Напомнить') + `
       <p class="hint" style="margin-top:-8px">Кнопка откроет WhatsApp с готовым текстом — останется нажать «Отправить». Клиент сразу уйдёт из списка. Тексты и сроки — в «Настройках».</p>
       ${rc.stock.length ? `<div class="panel"><h2>Аромат снова в наличии <small>эти клиенты просили сообщить</small></h2>${rc.stock.map(stockRow).join('')}</div>` : ''}
+      ${rc.wish.length ? `<div class="panel"><h2>Ищут ароматы, которых нет на сайте <small>заявки «Не нашли свой аромат?» — подскажут, что закупить</small></h2>${rc.wish.map(wishRow).join('')}</div>` : ''}
       ${rc.bonus.length ? `<div class="panel"><h2>Бонус за друга <small>друг купил по их коду — бонус уже создан</small></h2>${rc.bonus.map(bonusRow).join('')}</div>` : ''}
       ${out.length ? `<div class="panel"><h2>Ждут ароматы, которых нет <small>сообщим, когда отметите «В наличии»</small></h2>
         <div class="items">${out.map(x => `${esc(x[0])} — <b>${x[1]}</b>`).join('<br>')}</div></div>` : ''}
@@ -856,6 +863,14 @@
         if (send) wa(ph, fillText(st.notify_text || DEF_NOTIFY, { name: list[0].name, items: [{ name: list[0].product }] }, { link: 'https://smellparfume.github.io/#p-' + pid }));
         list.forEach(w => { w.notified = now; });
         mutate('mark_notified', { phone: ph, product_id: pid });
+        return render();
+      }
+      if (kind === 'wish') {
+        const ph = card.dataset.wphone, txt = card.dataset.wtext, list = (D.waitlist || []).filter(w => w.phone === ph && !w.product_id && w.product === txt && !w.notified);
+        if (!list.length) return;
+        if (send) wa(ph, fillText(DEF_WISH, { name: list[0].name, items: [{ name: txt }] }, {}));
+        list.forEach(w => { w.notified = now; });
+        mutate('mark_notified', { phone: ph, product_id: '', product: txt });
         return render();
       }
       const o = D.orders.find(x => x.number === card.dataset.rnum);

@@ -249,6 +249,10 @@
   @media (max-width: 520px) { .note-chips { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin-right: -16px; padding-right: 16px; } .note-chips::-webkit-scrollbar { display: none; } .note-chips button, .note-chips span { flex: none; } }
   .note-chips button { border: 1px solid var(--line); background: none; color: var(--muted); border-radius: 999px; padding: 3px 11px; font-size: 12px; min-height: 28px; transition: border-color .2s, color .2s; }
   .note-chips button:hover, .note-chips button.active { border-color: var(--accent); color: var(--accent); }
+  @media (max-width: 420px) { #wishForm { grid-template-columns: 1fr; } }
+  .wish-cta { margin-top: 28px; text-align: center; color: var(--muted); font-size: 15px; }
+  .wish-cta .btn { margin-left: 8px; }
+  @media (max-width: 520px) { .wish-cta .btn { display: flex; margin: 10px auto 0; width: fit-content; } }
   .waitbox { display: grid; gap: 10px; padding: 14px; border: 1px dashed var(--line-strong); border-radius: 14px; }
   .waitbox p { margin: 0; font-size: 13px; color: var(--muted); }
   .waitbox .row { display: grid; grid-template-columns: 1fr 1.3fr; gap: 8px; }
@@ -592,6 +596,7 @@
       <div class="note-chips" id="noteChips" aria-label="Поиск по нотам"></div>
       <div class="result-info" id="resultInfo"></div>
       <div class="grid" id="grid"><div class="loading" style="grid-column:1/-1"><div class="spinner"></div></div></div>
+      <div class="wish-cta">Не нашли свой аромат? <button class="btn btn-small" data-wish>Напишите, какой — постараемся привезти</button></div>
     </div>
   </section>
 
@@ -651,6 +656,7 @@
       <a class="soc" id="footWa" href="#" target="_blank" rel="noopener"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M12.04 2C6.58 2 2.13 6.45 2.13 11.91c0 1.75.46 3.45 1.32 4.95L2.05 22l5.25-1.38a9.9 9.9 0 0 0 4.74 1.21c5.46 0 9.91-4.45 9.91-9.91S17.5 2 12.04 2zm0 18.15c-1.48 0-2.93-.4-4.2-1.15l-.3-.18-3.12.82.83-3.04-.2-.31a8.2 8.2 0 0 1-1.26-4.38c0-4.54 3.7-8.24 8.25-8.24 4.54 0 8.24 3.7 8.24 8.24 0 4.55-3.7 8.24-8.24 8.24zm4.52-6.16c-.25-.12-1.47-.72-1.69-.81-.23-.08-.39-.12-.56.12-.17.25-.64.81-.78.97-.14.17-.29.19-.54.06-.25-.12-1.05-.39-1.99-1.23-.74-.66-1.23-1.47-1.38-1.72-.14-.25-.02-.38.11-.51.11-.11.25-.29.37-.43.13-.15.17-.25.25-.42.08-.17.04-.31-.02-.43-.06-.12-.56-1.34-.76-1.84-.2-.48-.41-.42-.56-.43h-.48c-.17 0-.43.06-.66.31-.22.25-.86.85-.86 2.07 0 1.22.89 2.4 1.01 2.56.12.17 1.75 2.67 4.23 3.74.59.26 1.05.41 1.41.52.59.19 1.13.16 1.56.1.48-.07 1.47-.6 1.67-1.18.21-.58.21-1.07.14-1.18-.06-.1-.22-.16-.47-.28z"/></svg> WhatsApp</a>
       <a class="soc" id="footIg" href="#" target="_blank" rel="noopener"><svg class="ico" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="17.4" cy="6.6" r="1.3" fill="currentColor"/></svg> Instagram</a>
       <a href="?otzyv" id="footReview">Оставить отзыв</a>
+      <a href="#" data-wish>Не нашли аромат?</a>
       <a href="#" id="installApp" hidden>📲 Установить на телефон</a>
       <a href="/aromaty/">Все ароматы</a>
       <a href="privacy.html">Политика конфиденциальности</a>
@@ -681,6 +687,10 @@
 
 <dialog id="cmpDialog" aria-label="Сравнение ароматов">
   <div class="quiz cmp-dlg" id="cmpBody"></div>
+</dialog>
+
+<dialog id="wishDialog" aria-label="Не нашли аромат">
+  <div class="quiz" id="wishBody"></div>
 </dialog>
 
 <dialog id="reviewDialog" aria-label="Оставить отзыв">
@@ -879,7 +889,7 @@
     const total = state.data.products.length;
     $('#resultInfo').textContent = list.length === total ? `${total} ароматов` : `Найдено: ${list.length} из ${total}`;
     if (!list.length) {
-      $('#grid').innerHTML = '<div class="empty" style="grid-column:1/-1">Ничего не нашлось. Попробуйте изменить фильтры — или напишите нам, подберём похожий аромат.</div>';
+      $('#grid').innerHTML = '<div class="empty" style="grid-column:1/-1">Ничего не нашлось. Попробуйте изменить фильтры — или <button class="link-btn" style="font-size:inherit;color:var(--accent)" data-wish>напишите, какой аромат ищете</button>, постараемся привезти.</div>';
       return;
     }
     const minMl = Math.min(...state.ml);
@@ -1863,7 +1873,7 @@
           <div class="ph">${photo(p)}</div>
           <div class="t">${esc(p.brand)}<b>${esc(p.name)}</b>${(meta(p.id).families || []).map(f => FAMILY[f]).join(' · ')}</div>
           <button class="btn btn-small" data-qadd="${esc(p.id)}">3 мл · ${money(unit(p) * 3)}</button>
-        </div>`).join('') : '<p class="muted">Не нашли точного совпадения — напишите нам, подберём вручную.</p>'}</div>
+        </div>`).join('') : '<p class="muted">Не нашли точного совпадения — напишите нам, подберём вручную, или <button class="link-btn" style="font-size:inherit;color:var(--accent)" data-wish>назовите аромат, который ищете</button>.</p>'}</div>
         ${res.length > 1 ? `<button class="btn btn-primary btn-block" data-qall>Взять все ${res.length} по 3 мл · ${money(res.reduce((s, p) => s + unit(p) * 3, 0))}</button>` : ''}
         <div class="nav"><button class="btn btn-small" data-qrestart>Пройти заново</button><a class="btn btn-small" target="_blank" rel="noopener" href="https://wa.me/${state.wa}?text=${encodeURIComponent('Здравствуйте! Помогите подобрать аромат.')}">Спросить в WhatsApp</a></div>`;
       box.dataset.res = res.map(p => p.id).join(',');
@@ -1970,6 +1980,55 @@
     }
   });
   $('#footReview').addEventListener('click', e => { e.preventDefault(); openReview(''); });
+
+  // ───── «Не нашли свой аромат?» — заявка на лист «Ожидают» (без id), владельцу — в «Напомнить» ─────
+  function openWish() {
+    const c = store.get('client', {}), q = (state.q || '').trim();
+    $('#wishBody').innerHTML = `<button class="close-x" data-wclose aria-label="Закрыть">×</button>
+      <h2 style="margin:0;font-family:var(--font-display);font-weight:500;font-size:32px">Не нашли аромат?</h2>
+      <p class="muted" style="margin:0">Напишите, какой ищете. Постараемся привезти и сообщим в WhatsApp.</p>
+      <form id="wishForm" class="form-grid" novalidate>
+        <label class="field full"><span>Какой аромат *</span><input class="input" name="wish" required maxlength="100" placeholder="Бренд и название, например Chanel Coco Mademoiselle" value="${esc(q)}"></label>
+        <label class="field"><span>Имя</span><input class="input" name="name" maxlength="40" autocomplete="given-name" value="${esc(c.name || '')}"></label>
+        <label class="field"><span>Телефон *</span><input class="input" name="phone" type="tel" inputmode="tel" placeholder="+7 (7__) ___-__-__" autocomplete="tel" value="${esc(c.phone || '')}"></label>
+        <label class="consent full"><input type="checkbox" name="consent" ${c.consent ? 'checked' : ''}><span>Согласен(на) на обработку персональных данных по <a href="privacy.html" target="_blank">политике</a></span></label>
+        <button class="btn btn-primary btn-block full" id="wishSend">Отправить</button>
+      </form>`;
+    ['#quizDialog', '#productDialog'].forEach(id => { if ($(id).open) $(id).close(); });
+    const d = $('#wishDialog');
+    if (!d.open) d.showModal();
+  }
+  document.addEventListener('click', e => {
+    if (!e.target.closest('[data-wish]')) return;
+    e.preventDefault();
+    openWish();
+  });
+  $('#wishDialog').addEventListener('click', e => {
+    const d = $('#wishDialog');
+    if (e.target === d || e.target.closest('[data-wclose]')) d.close();
+  });
+  $('#wishDialog').addEventListener('submit', async e => {
+    e.preventDefault();
+    const f = e.target, wish = f.wish.value.trim(), name = f.name.value.trim(), phone = phoneDigits(f.phone.value);
+    if (wish.length < 2) return toast('Напишите, какой аромат ищете', true);
+    if (!/^7\d{10}$/.test(phone)) return toast('Проверьте номер телефона', true);
+    if (!f.consent.checked) return toast('Отметьте согласие на обработку данных', true);
+    if (!API) return window.open(`https://wa.me/${state.wa}?text=${encodeURIComponent('Здравствуйте! Ищу аромат: ' + wish)}`, '_blank', 'noopener');
+    const btn = $('#wishSend'); btn.disabled = true; btn.textContent = 'Отправляем…';
+    try {
+      const r = await post({ action: 'notify', wish: wish, phone: phone, name: name, consent: true });
+      if (!r.ok) throw new Error(r.error);
+      const c = store.get('client', {});
+      store.set('client', Object.assign(c, { name: c.name || name, phone: f.phone.value, consent: true }));
+      $('#wishBody').innerHTML = `<button class="close-x" data-wclose aria-label="Закрыть">×</button>
+        <div class="success"><div class="num" style="font-size:40px">Спасибо!</div><p class="muted" style="margin:0">Заявку получили. Как только привезём «${esc(wish)}», напишем вам в WhatsApp.</p>
+        <button class="btn btn-primary" data-wclose>Вернуться к ароматам</button></div>`;
+      track('wish', '', wish.slice(0, 60));
+    } catch (err) {
+      toast(err.message || 'Не удалось отправить, попробуйте ещё раз', true);
+      btn.disabled = false; btn.textContent = 'Отправить';
+    }
+  });
 
   // Форма отзыва не зависит от каталога — открываем сразу, не дожидаясь загрузки.
   const params = new URLSearchParams(location.search);
