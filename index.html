@@ -164,10 +164,14 @@
   .total-row { display: flex; align-items: baseline; justify-content: space-between; border-top: 1px solid var(--line); padding-top: 14px; margin-top: auto; }
   .total-row strong { font-size: 26px; font-family: var(--font-display); font-weight: 600; }
   .close-x { position: absolute; top: 12px; right: 12px; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--line-strong); background: rgba(26,26,26,.75); font-size: 22px; line-height: 1; z-index: 2; }
-  @media (max-width: 720px) { .modal { grid-template-columns: minmax(0, 1fr); } .modal > .ph { aspect-ratio: 1; min-height: 0; } .modal > .ph > svg { height: 100% !important; } .modal .content { padding: 20px; } .modal h2 { font-size: 28px; }
-    /* iPhone (Safari): мерцающие лучи + скругление ломали прокрутку — картинка «застревала» поверх текста */
-    .modal { -webkit-transform: translateZ(0); transform: translateZ(0); }
-    .modal > .ph { isolation: isolate; -webkit-transform: translateZ(0); transform: translateZ(0); } }
+  /* Телефон: без сетки и aspect-ratio — iPhone (Safari) неверно считал высоту картинки, и она наезжала на текст */
+  @media (max-width: 720px) {
+    .modal { display: block; }
+    .modal > .ph { display: block; width: 100%; height: calc(100vw - 26px); max-height: 70dvh; min-height: 0; }
+    .modal > .ph > svg { display: block; width: 100%; height: 100% !important; max-height: none; }
+    .modal .content { position: relative; z-index: 1; background: var(--surface); padding: 20px; }
+    .modal h2 { font-size: 28px; }
+  }
 
   /* Корзина */
   .drawer { position: fixed; inset: 0; z-index: 100; pointer-events: none; }
