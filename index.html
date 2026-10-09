@@ -1554,6 +1554,7 @@
         <label class="field full"><span>Телефон *</span><input class="input" name="phone" type="tel" inputmode="tel" required autocomplete="tel" placeholder="+7 (7__) ___-__-__" value="${esc(client.phone || '')}"></label>
         <label class="field full" id="addrField" ${delivery().id === 'pickup' ? 'hidden' : ''}><span>Адрес${delivery().id === 'kz' ? ' (город, улица, дом)' : ''}</span><input class="input" name="address" autocomplete="street-address" value="${esc(client.address || '')}"></label>
         <label class="field full"><span>Комментарий</span><input class="input" name="comment" placeholder="Например: удобное время"></label>
+        <label class="field full"><span>Дата рождения <small class="muted">— необязательно, подарим скидку</small></span><input class="input" name="birthday" inputmode="numeric" placeholder="ДД.ММ" maxlength="10" value="${esc(client.birthday || '')}"></label>
         <label class="consent full"><input type="checkbox" name="consent" ${client.consent ? 'checked' : ''}><span>Согласен(на) на обработку персональных данных в соответствии с <a href="privacy.html" target="_blank">политикой конфиденциальности</a></span></label>
       </form>`;
     // Код друга из ссылки: если телефон уже известен — проверяем сразу (один раз).
@@ -1621,7 +1622,9 @@
     if (!data.consent) return toast('Отметьте согласие на обработку данных', true);
     const dv = delivery(), address = String(data.address || '').trim();
     if (dv.id !== 'pickup' && !address) return toast('Укажите адрес доставки', true);
-    store.set('client', { name: data.name.trim(), surname: data.surname.trim(), phone: data.phone, address: address, consent: true });
+    const birthday = String(data.birthday || '').trim();
+    if (birthday && !/^\d{1,2}[.\/-]\d{1,2}([.\/-]\d{4})?$/.test(birthday)) return toast('Дата рождения в формате ДД.ММ', true);
+    store.set('client', { name: data.name.trim(), surname: data.surname.trim(), phone: data.phone, address: address, birthday: birthday, consent: true });
     const dvText = dv.name + (dv.cost === null ? ' (стоимость уточним)' : dv.cost ? ' — ' + money(dv.cost) : dv.price ? ' — бесплатно' : '')
       + (dv.id !== 'pickup' ? '\nАдрес: ' + address : '')
       + '\nОплата: ' + (payment() === 'cash' ? 'наличными при получении' : 'Kaspi');
@@ -1633,7 +1636,7 @@
     const items = state.cart.map(l => l.gift ? { gift: l.gift, qty: l.qty } : (l.diy ? { id: l.id, ml: l.ml, qty: 1, diy: true } : { id: l.id, ml: l.ml, qty: l.qty, set: l.set || '' }));
     const gift = sampleItem();
     if (gift) items.push({ id: gift.id, ml: sampleRules().ml, qty: 1, sample: true });
-    const body = { action: 'order', number: number, items: items, name: data.name, surname: data.surname, phone: phone, promo: state.promo ? state.promo.code : '', comment: dvText.replace(/\n/g, '. ') + (data.comment.trim() ? '. ' + data.comment.trim() : ''), consent: true };
+    const body = { action: 'order', number: number, items: items, name: data.name, surname: data.surname, phone: phone, birthday: birthday, promo: state.promo ? state.promo.code : '', comment: dvText.replace(/\n/g, '. ') + (data.comment.trim() ? '. ' + data.comment.trim() : ''), consent: true };
     state.sending = true; renderCart();
     let result = null, request = null;
     if (API) {

@@ -33,9 +33,22 @@
     .side .logo, .side .bottom { display: none; }
     .tab { flex-direction: column; gap: 3px; padding: 6px 2px; font-size: 10px; justify-content: center; position: relative; }
     .tab .count { position: absolute; top: 0; right: 50%; margin-right: -22px; }
+    .tab.extra { display: none; }
+    .side .tab.more { display: flex; }
+    .tab svg { width: 22px; height: 22px; }
     main { padding: 16px 16px 110px; }
     .head h1 { font-size: 26px; }
+    .order .actions .btn, .order .actions a.btn { min-height: 42px; padding-left: 14px; padding-right: 14px; }
+    .chip { min-height: 36px; }
+    .prod-row { grid-template-columns: 44px 1fr auto; row-gap: 6px; }
+    .prod-row .th { width: 44px; height: 44px; }
+    .prod-row .stk { grid-column: 2 / 3; justify-content: flex-start; }
+    .prod-row .switch { grid-column: 3; grid-row: 2; justify-self: end; }
   }
+  .tab.more { display: none; }
+  .more-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .more-grid .btn { min-height: 56px; justify-content: flex-start; gap: 10px; }
+  .more-grid svg { width: 20px; height: 20px; }
 
   .kpis { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; margin-bottom: 18px; }
   .kpi { background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); padding: 16px; }
@@ -75,13 +88,35 @@
   .st-cancel { background: rgba(224,122,106,.15); color: var(--danger); }
   .st-noans { background: var(--surface-2); color: var(--muted); }
 
-  .prod-row { display: grid; grid-template-columns: 48px 1fr auto auto; gap: 12px; align-items: center; padding: 10px 4px; border-bottom: 1px solid var(--line); cursor: pointer; }
+  .prod-row { display: grid; grid-template-columns: 48px 1fr auto auto auto; gap: 12px; align-items: center; padding: 10px 4px; border-bottom: 1px solid var(--line); cursor: pointer; }
   .prod-row:hover { background: rgba(255,255,255,.02); }
   .prod-row .th { width: 48px; height: 48px; border-radius: 8px; overflow: hidden; background: var(--bg-2); display: grid; place-items: center; font-family: var(--font-deco); color: var(--muted); }
   .prod-row .th img { width: 100%; height: 100%; object-fit: cover; }
   .prod-row .nm small { display: block; color: var(--muted); font-size: 12px; }
   .prod-row .pr { text-align: right; white-space: nowrap; }
   .prod-row .pr small { display: block; color: var(--muted); font-size: 12px; }
+  .stk { display: flex; align-items: center; gap: 6px; white-space: nowrap; font-size: 13px; color: var(--muted); }
+  .stk b { color: var(--text); font-weight: 600; }
+  .stk.low b { color: var(--danger); }
+  .stk button { border: 1px solid var(--line-strong); background: none; color: var(--text); border-radius: 8px; padding: 4px 8px; font-size: 12px; min-height: 30px; }
+  .badge { font-size: 11px; font-weight: 700; padding: 3px 9px; border-radius: 999px; background: rgba(143,191,138,.18); color: var(--ok); }
+  .badge.warn { background: rgba(224,122,106,.15); color: var(--danger); }
+  .badge.muted { background: var(--surface-2); color: var(--muted); }
+  .buy-sec { display: grid; gap: 6px; }
+  .buy-sec label { display: flex; gap: 10px; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--line); }
+  .buy-sec label input { width: 18px; height: 18px; accent-color: var(--accent); flex: none; }
+  .buy-sec label .q { margin-left: auto; white-space: nowrap; color: var(--muted); font-size: 12px; }
+  .exp-form { display: grid; grid-template-columns: 140px 1fr 120px 2fr auto; gap: 8px; align-items: end; }
+  @media (max-width: 860px) { .exp-form { grid-template-columns: 1fr 1fr; } .exp-form .wide { grid-column: 1 / -1; } }
+  .rcpt { background: #fff; color: #111; border-radius: 12px; padding: 20px; font-family: 'Courier New', monospace; font-size: 13px; line-height: 1.5; }
+  .rcpt h3 { margin: 0; text-align: center; font-family: var(--font-deco); font-weight: 400; letter-spacing: .1em; }
+  .rcpt .c { text-align: center; }
+  .rcpt .ln { display: flex; justify-content: space-between; gap: 10px; }
+  .rcpt hr { border: 0; border-top: 1px dashed #999; margin: 8px 0; }
+  .rcpt .tot { font-weight: 700; font-size: 16px; }
+  .wa-pick { display: grid; gap: 8px; }
+  .wa-pick button { text-align: left; padding: 12px 14px; min-height: 52px; }
+  .wa-pick small { display: block; color: var(--muted); font-size: 12px; margin-top: 2px; white-space: normal; }
   .switch { position: relative; width: 42px; height: 24px; flex: none; }
   .switch input { opacity: 0; width: 100%; height: 100%; margin: 0; position: absolute; cursor: pointer; z-index: 1; }
   .switch span { position: absolute; inset: 0; background: var(--surface-2); border-radius: 999px; transition: .2s; pointer-events: none; }
@@ -168,7 +203,12 @@
     settings: '<circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6a7 7 0 0 0 0 2.4l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2L10 21h4l.5-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2Z"/>'
   };
   ICONS.remind = '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>';
-  const TABS = [['dash', 'Аналитика'], ['orders', 'Заказы'], ['products', 'Товары'], ['clients', 'Клиенты'], ['remind', 'Напомнить'], ['promos', 'Промокоды'], ['settings', 'Настройки']];
+  ICONS.money = '<rect x="2" y="6" width="20" height="13" rx="2"/><circle cx="12" cy="12.5" r="2.5"/><path d="M6 10v5M18 10v5"/>';
+  ICONS.more = '<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>';
+  const TABS = [['dash', 'Аналитика'], ['orders', 'Заказы'], ['products', 'Товары'], ['clients', 'Клиенты'], ['remind', 'Напомнить'], ['money', 'Финансы'], ['promos', 'Промокоды'], ['settings', 'Настройки']];
+  // На телефоне внизу помещаются только главные вкладки, остальные — под кнопкой «Ещё».
+  const EXTRA_TABS = ['money', 'promos', 'settings'];
+  const svgIcon = k => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${ICONS[k]}</svg>`;
 
   // ───────── API ─────────
   async function api(action, payload) {
@@ -284,6 +324,40 @@
     renderLogin(expired ? 'Сессия истекла — войдите заново' : '');
   }
 
+  // Пока админка открыта, раз в минуту тихо проверяем новые заказы: звук, уведомление, счётчик во вкладке.
+  let audioCtx = null;
+  document.addEventListener('click', () => {
+    if (audioCtx) return;
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { /* без звука */ }
+  }, { capture: true });
+  function beep() {
+    if (!audioCtx || ls.get('mute') === '1') return;
+    try {
+      audioCtx.resume();
+      [0, .18].forEach((d, i) => {
+        const o = audioCtx.createOscillator(), g = audioCtx.createGain(), t = audioCtx.currentTime + d;
+        o.type = 'sine'; o.frequency.value = i ? 1175 : 880;
+        g.gain.setValueAtTime(.0001, t); g.gain.exponentialRampToValueAtTime(.3, t + .02); g.gain.exponentialRampToValueAtTime(.0001, t + .25);
+        o.connect(g); g.connect(audioCtx.destination); o.start(t); o.stop(t + .3);
+      });
+    } catch (e) { /* без звука */ }
+  }
+  async function poll() {
+    if (!S.token || !S.data || sync.pending) return;
+    const before = new Set(S.data.orders.map(o => o.number));
+    try {
+      const r = await api('admin_data');
+      if (sync.pending) return;
+      const fresh = r.orders.filter(o => !before.has(o.number) && o.status === 'Новый' && o.source === 'сайт');
+      applyData(r);
+      if (fresh.length) {
+        beep();
+        toast(fresh.length === 1 ? `🔔 Новый заказ № ${fresh[0].number} — ${money(fresh[0].total)}` : `🔔 Новых заказов: ${fresh.length}`);
+      }
+    } catch (e) { /* нет сети — попробуем через минуту */ }
+  }
+  setInterval(poll, 60000);
+
   async function start() {
     if (!S.token) return renderLogin();
     // Сначала мгновенно показываем сохранённые данные, затем тихо подтягиваем свежие.
@@ -303,7 +377,8 @@
       $('#root').innerHTML = `<div class="app">
         <nav class="side">
           <div class="logo"><img src="assets/logo.jpg" alt=""><b>SMELL<br>PARFUME</b></div>
-          ${TABS.map(t => `<button class="tab" data-tab="${t[0]}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${ICONS[t[0]]}</svg><span>${t[1]}</span>${t[0] === 'orders' ? '<em class="count" id="newCount" style="font-style:normal"></em>' : t[0] === 'remind' ? '<em class="count" id="remindCount" style="font-style:normal"></em>' : ''}</button>`).join('')}
+          ${TABS.map(t => `<button class="tab${EXTRA_TABS.includes(t[0]) ? ' extra' : ''}" data-tab="${t[0]}">${svgIcon(t[0])}<span>${t[1]}</span>${t[0] === 'orders' ? '<em class="count" id="newCount" style="font-style:normal"></em>' : t[0] === 'remind' ? '<em class="count" id="remindCount" style="font-style:normal"></em>' : ''}</button>`).join('')}
+          <button class="tab more" id="moreBtn">${svgIcon('more')}<span>Ещё</span></button>
           <div class="bottom">
             <a class="tab" href="index.html" target="_blank">↗ Открыть сайт</a>
             <button class="tab" id="logoutBtn">Выйти</button>
@@ -316,15 +391,33 @@
         if (t) { S.tab = t.dataset.tab; ls.set('tab', S.tab); render(); window.scrollTo(0, 0); }
       });
       $('#logoutBtn').addEventListener('click', () => logout());
+      $('#moreBtn').addEventListener('click', moreMenu);
       $('#main').addEventListener('click', onProductClick);
     }
     $$('.tab[data-tab]').forEach(t => t.classList.toggle('active', t.dataset.tab === S.tab));
+    $('#moreBtn').classList.toggle('active', EXTRA_TABS.includes(S.tab));
     $('#newCount').textContent = newCount || '';
     $('#newCount').style.display = newCount ? '' : 'none';
-    const rc = remindRows(), rn = rc.review.length + rc.repeat.length + rc.stock.length + rc.wish.length + rc.bonus.length;
+    document.title = (newCount ? `(${newCount}) ` : '') + 'Админка — SMELL PARFUME';
+    const rc = remindRows(), rn = rc.review.length + rc.repeat.length + rc.stock.length + rc.wish.length + rc.bonus.length + rc.bday.length;
     $('#remindCount').textContent = rn || '';
     $('#remindCount').style.display = rn ? '' : 'none';
-    ({ dash: renderDash, orders: renderOrders, products: renderProducts, clients: renderClients, remind: renderRemind, promos: renderPromos, settings: renderSettings }[S.tab] || renderDash)();
+    ({ dash: renderDash, orders: renderOrders, products: renderProducts, clients: renderClients, remind: renderRemind, money: renderMoney, promos: renderPromos, settings: renderSettings }[S.tab] || renderDash)();
+  }
+
+  function moreMenu() {
+    openDlg(`<h2>Ещё<button class="x" data-x>×</button></h2>
+      <div class="more-grid">
+        ${TABS.filter(t => EXTRA_TABS.includes(t[0])).map(t => `<button class="btn" data-goto="${t[0]}">${svgIcon(t[0])}${t[1]}</button>`).join('')}
+        <a class="btn" href="index.html" target="_blank">↗ Открыть сайт</a>
+        <button class="btn" data-goto="logout">Выйти</button>
+      </div>`);
+    $('#dlgBody').addEventListener('click', e => {
+      const b = e.target.closest('[data-goto]'); if (!b) return;
+      closeDlg();
+      if (b.dataset.goto === 'logout') return logout();
+      S.tab = b.dataset.goto; ls.set('tab', S.tab); render(); window.scrollTo(0, 0);
+    });
   }
 
   const head = (title, extra) => `<div class="head"><h1>${title}</h1>${extra || ''}<button class="btn btn-small" data-reload title="Обновить данные">↻</button></div>`;
@@ -357,6 +450,7 @@
     const sold = byStatus('Продано');
     const conv = orders.length ? Math.round(sold / orders.length * 100) : 0;
     const newClients = d.clients.filter(c => inP(c.created)).length;
+    const spent = (d.expenses || []).filter(e => inP(e.date)).reduce((a, e) => a + e.amount, 0);
     const visitors = Object.keys(d.events.byDay).filter(inP).reduce((a, k) => a + d.events.byDay[k].visitors, 0);
     const views = Object.keys(d.events.byDay).filter(inP).reduce((a, k) => a + d.events.byDay[k].view, 0);
 
@@ -380,6 +474,7 @@
       <div class="kpis">
         <div class="kpi"><span>Выручка</span><b>${money(revenue)}</b><small>${nOrders} продаж</small></div>
         <div class="kpi"><span>Прибыль</span><b>${money(profit)}</b><small>маржа ${revenue ? Math.round(profit / revenue * 100) : 0}%</small></div>
+        <div class="kpi"><span>Чистая прибыль</span><b style="color:${profit - spent < 0 ? 'var(--danger)' : 'inherit'}">${money(profit - spent)}</b><small>расходы ${money(spent)} · <a href="#" data-gomoney>внести</a></small></div>
         <div class="kpi"><span>Продано</span><b>${fmtNum(ml)} мл</b><small>средний чек ${money(nOrders ? revenue / nOrders : 0)}</small></div>
         <div class="kpi"><span>Заказы с сайта</span><b>${orders.length}</b><small>продано ${sold} · конверсия ${conv}%</small></div>
         <div class="kpi"><span>Посетители сайта</span><b>${visitors}</b><small>${views} просмотров ароматов</small></div>
@@ -416,6 +511,7 @@
         </div>
       </div>`;
     $$('[data-period]').forEach(b => b.addEventListener('click', () => { S.period = b.dataset.period; renderDash(); }));
+    $('[data-gomoney]').addEventListener('click', e => { e.preventDefault(); S.tab = 'money'; ls.set('tab', 'money'); render(); });
   }
 
   function chart(days, from, to) {
@@ -449,9 +545,12 @@
   function renderOrders() {
     const d = S.data, f = S.orderFilter, q = (S.q.orders || '').toLowerCase();
     const counts = st => d.orders.filter(o => o.status === st).length;
-    const list = d.orders.filter(o => (!f || o.status === f) && (!q || (o.number + ' ' + o.name + ' ' + o.surname + ' ' + o.phone + ' ' + o.items_text).toLowerCase().includes(q))).slice(0, 200);
+    const quick = { '@today': o => o.date.slice(0, 10) === today(), '@unpaid': o => !o.paid && (o.status === 'Новый' || o.status === 'Продано'), '@work': o => o.status === 'Новый' || o.status === 'Без ответа' };
+    const match = o => quick[f] ? quick[f](o) : !f || o.status === f;
+    const list = d.orders.filter(o => match(o) && (!q || (o.number + ' ' + o.name + ' ' + o.surname + ' ' + o.phone + ' ' + o.items_text).toLowerCase().includes(q))).slice(0, 200);
     $('#main').innerHTML = head('Заказы', '<button class="btn btn-accent btn-small" id="manualBtn">+ Продажа вручную</button>') + `
       <div class="toolbar">
+        <div class="chips">${[['@today', 'Сегодня'], ['@unpaid', 'Не оплачено'], ['@work', 'В работе']].map(c => `<button class="chip ${f === c[0] ? 'active' : ''}" data-of="${c[0]}">${c[1]} · ${d.orders.filter(quick[c[0]]).length}</button>`).join('')}</div>
         <div class="chips">${[['Новый', 'Новые'], ['Без ответа', 'Без ответа'], ['Продано', 'Продано'], ['Отменён', 'Отменены'], ['', 'Все']].map(c => `<button class="chip ${f === c[0] ? 'active' : ''}" data-of="${c[0]}">${c[1]}${c[0] ? ' · ' + counts(c[0]) : ''}</button>`).join('')}</div>
         <input class="input" id="orderSearch" type="search" placeholder="Поиск: номер, имя, телефон" value="${esc(S.q.orders || '')}">
       </div>
@@ -466,7 +565,7 @@
     const client = [o.name, o.surname].filter(Boolean).join(' ') || 'Без имени';
     return `<div class="order" data-num="${esc(o.number)}">
       <div class="top"><span class="num">№ ${esc(o.number)}</span><span class="status ${STATUS_CLS[o.status] || 'st-noans'}">${esc(o.status)}</span>
-        <span class="muted">${ruDate(o.date)}${o.source === 'вручную' ? ' · вручную' : ''}</span><b style="margin-left:auto;font-size:16px">${money(o.total)}</b></div>
+        <span class="muted">${ruDate(o.date)}${o.source === 'вручную' ? ' · вручную' : ''}</span>${o.paid ? '<span class="badge">оплачен</span>' : o.status !== 'Отменён' ? '<span class="badge muted">не оплачен</span>' : ''}${o.receipt ? `<span class="badge muted">чек ${esc(o.receipt)}</span>` : ''}<b style="margin-left:auto;font-size:16px">${money(o.total)}</b></div>
       <div><b>${esc(client)}</b>${o.phone ? ` · <a href="https://wa.me/${o.phone}" target="_blank" rel="noopener">${phoneFmt(o.phone)}</a>` : ''}</div>
       <div class="items">${(o.items.length ? o.items : []).map(it => it.gift
           ? `<div>🎁 ${esc(it.name)}${it.qty > 1 ? ' × ' + it.qty : ''} · ${money(lineSum(it))}</div>`
@@ -479,7 +578,9 @@
         ${o.status !== 'Продано' ? '<button class="btn btn-small btn-accent" data-act="sold">✓ Продано</button>' : '<button class="btn btn-small" data-act="new">Вернуть в «Новый»</button>'}
         ${o.status !== 'Отменён' && o.status !== 'Продано' ? '<button class="btn btn-small" data-act="cancel">✕ Отменён</button>' : ''}
         ${o.status !== 'Продано' ? '<button class="btn btn-small" data-act="edit">Изменить</button>' : ''}
-        ${o.phone ? `<a class="btn btn-small" href="https://wa.me/${o.phone}?text=${encodeURIComponent('Здравствуйте, ' + (o.name || '') + '! Это SMELL PARFUME, по вашему заказу № ' + o.number + '.')}" target="_blank" rel="noopener">WhatsApp</a>` : ''}
+        ${o.status !== 'Отменён' ? `<button class="btn btn-small" data-act="paid">${o.paid ? '✓ Оплачено' : '₸ Оплачено'}</button>` : ''}
+        ${o.status === 'Продано' || o.paid ? '<button class="btn btn-small" data-act="receipt">🧾 Чек</button>' : ''}
+        ${o.phone ? '<button class="btn btn-small" data-act="wa" style="background:#25d366;border-color:#25d366;color:#0b2e17">WhatsApp ▾</button>' : ''}
       </div>
     </div>`;
   }
@@ -489,6 +590,15 @@
     const num = b.closest('[data-num]').dataset.num;
     const act = b.dataset.act;
     if (act === 'edit') return orderEditor(S.data.orders.find(o => o.number === num));
+    const ord = S.data.orders.find(o => o.number === num);
+    if (act === 'wa') return waPicker(ord);
+    if (act === 'receipt') return receiptDialog(ord);
+    if (act === 'paid') {
+      if (ord.paid && !confirm('Снять отметку «Оплачено»?')) return;
+      ord.paid = ord.paid ? '' : today() + ' ' + new Date().toLocaleTimeString('ru-RU', { timeZone: 'Asia/Almaty', hour: '2-digit', minute: '2-digit' });
+      render();
+      return mutate('order_paid', { number: num, paid: !!ord.paid }, ord.paid ? `№ ${num} — оплачено` : 'Отметка снята');
+    }
     if (act === 'new' && !confirm('Вернуть заказ в «Новый»? Продажа будет удалена из аналитики.')) return;
     const status = { sold: 'Продано', cancel: 'Отменён', new: 'Новый' }[act];
     const order = S.data.orders.find(o => o.number === num);
@@ -499,6 +609,93 @@
   }
 
   const lineSum = it => it.gift ? it.price * (it.qty || 1) : it.price * it.ml * (it.qty || 1);
+
+  // ───────── Сообщения по заказу ─────────
+  const DEF_WA_ORDER = 'Здравствуйте, {имя}! Это SMELL PARFUME 🌿 По вашему заказу № {номер}: ';
+  const DEF_WA_READY = 'Здравствуйте, {имя}! Это SMELL PARFUME 🌿 Ваш заказ № {номер} собран: {аромат}. Сумма: {сумма}. Скоро свяжемся по доставке 🙌';
+  const DEF_WA_COURIER = 'Здравствуйте, {имя}! Курьер с вашим заказом № {номер} уже выехал 🚗 Сумма к оплате: {сумма}. Хорошего дня!';
+  const DEF_WA_PAID = 'Здравствуйте, {имя}! Оплату {сумма} по заказу № {номер} получили, спасибо 🙏 Будем рады видеть вас снова!';
+  const fillOrder = (tpl, o) => fillText(tpl.replace(/\{номер\}/g, o.number).replace(/\{сумма\}/g, money(o.total)), o, {});
+  function waPicker(o) {
+    const s = S.data.settings;
+    const opts = [['ready', 'Заказ собран', s.wa_ready_text || DEF_WA_READY], ['courier', 'Курьер выехал', s.wa_courier_text || DEF_WA_COURIER],
+      ['paid', 'Оплата получена', s.wa_paid_text || DEF_WA_PAID], ['plain', 'Просто написать', DEF_WA_ORDER]];
+    openDlg(`<h2>WhatsApp · № ${esc(o.number)}<button class="x" data-x>×</button></h2>
+      <div class="wa-pick">${opts.map(x => `<button class="btn" data-wa="${x[0]}"><b>${x[1]}</b><small>${esc(fillOrder(x[2], o))}</small></button>`).join('')}</div>
+      <p class="hint" style="margin:0">Тексты меняются в «Настройках» → «Сообщения по заказу».</p>`);
+    $('#dlgBody').addEventListener('click', e => {
+      const b = e.target.closest('[data-wa]'); if (!b) return;
+      const tpl = opts.find(x => x[0] === b.dataset.wa)[2];
+      window.open('https://wa.me/' + o.phone + '?text=' + encodeURIComponent(fillOrder(tpl, o)), '_blank', 'noopener');
+      closeDlg();
+    });
+  }
+
+  // ───────── Чек: сохраняется в лист «Чеки» ─────────
+  const PAYMENTS = ['Kaspi', 'Наличные', 'Перевод', 'Карта'];
+  function receiptHtml(r, o) {
+    const items = o && o.items.length ? o.items.map(it => it.gift
+      ? [it.name + (it.qty > 1 ? ' × ' + it.qty : ''), lineSum(it)]
+      : [it.name + ' ' + fmtNum(it.ml) + ' мл' + (it.qty > 1 ? ' × ' + it.qty : '') + (it.sample ? ' (подарок)' : ''), lineSum(it)]) : null;
+    return `<div class="rcpt">
+      <h3>SMELL PARFUME</h3><div class="c">парфюм на разлив · ${esc(S.data.settings.city || '')}</div><hr>
+      <div class="ln"><span>Чек</span><b>${esc(r.number)}</b></div>
+      <div class="ln"><span>Дата</span><span>${ruDate(r.date)}</span></div>
+      <div class="ln"><span>Заказ</span><span>№ ${esc(r.order)}</span></div>
+      ${r.client ? `<div class="ln"><span>Покупатель</span><span>${esc(r.client)}</span></div>` : ''}
+      <hr>${items ? items.map(x => `<div class="ln"><span>${esc(x[0])}</span><span>${money(x[1])}</span></div>`).join('') : `<div>${esc(r.items_text)}</div>`}
+      <hr>${r.discount ? `<div class="ln"><span>Сумма</span><span>${money(r.subtotal)}</span></div><div class="ln"><span>Скидка</span><span>−${money(r.discount)}</span></div>` : ''}
+      <div class="ln tot"><span>ИТОГО</span><span>${money(r.total)}</span></div>
+      <div class="ln"><span>Оплата</span><span>${esc(r.payment)}</span></div><hr>
+      <div class="c">Спасибо за покупку! 🖤<br>smellparfume.github.io</div></div>`;
+  }
+  const receiptText = (r, o) => `SMELL PARFUME — чек ${r.number}\nЗаказ № ${r.order} от ${ruDate(r.date)}\n\n`
+    + (o && o.items.length ? o.items.map(it => '• ' + it.name + (it.gift ? '' : ' ' + fmtNum(it.ml) + ' мл') + (it.qty > 1 ? ' × ' + it.qty : '') + ' — ' + money(lineSum(it))).join('\n') : r.items_text)
+    + (r.discount ? `\nСкидка: −${money(r.discount)}` : '') + `\nИтого: ${money(r.total)}\nОплата: ${r.payment}\n\nСпасибо за покупку! 🖤`;
+  function printHtml(title, body) {
+    const w = window.open('', '_blank');
+    if (!w) return toast('Разрешите всплывающие окна для печати', true);
+    w.document.write(`<!doctype html><html lang="ru"><head><meta charset="utf-8"><title>${esc(title)}</title><style>
+      body{font-family:Arial,sans-serif;color:#111;margin:24px;font-size:13px} h1{font-size:22px;margin:0 0 4px} h2{font-size:15px;margin:22px 0 8px}
+      table{width:100%;border-collapse:collapse} th,td{border-bottom:1px solid #ddd;padding:6px 4px;text-align:left} td.r,th.r{text-align:right;white-space:nowrap}
+      .k{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.k div{border:1px solid #ddd;border-radius:8px;padding:10px}.k b{display:block;font-size:18px}
+      .rcpt{max-width:320px;margin:0 auto;font-family:'Courier New',monospace;line-height:1.5}.rcpt h3{text-align:center;margin:0;letter-spacing:.1em}.c{text-align:center}
+      .ln{display:flex;justify-content:space-between;gap:10px}.rcpt hr{border:0;border-top:1px dashed #999;margin:8px 0}.tot{font-weight:700;font-size:16px}
+      @media print{body{margin:0}}</style></head><body>${body}<script>setTimeout(function(){print()},300)<\/script></body></html>`);
+    w.document.close();
+  }
+  function receiptDialog(o) {
+    const r = o.receipt && (S.data.receipts || []).find(x => x.number === o.receipt);
+    if (!r) {
+      const guess = /наличн/i.test(o.comment || '') ? 'Наличные' : 'Kaspi';
+      openDlg(`<h2>Чек · № ${esc(o.number)}<button class="x" data-x>×</button></h2>
+        <p class="muted" style="margin:0">Чек получит номер и сохранится в таблице (лист «Чеки»). Сумма: <b>${money(o.total)}</b></p>
+        <label class="field"><span>Способ оплаты</span><select class="select" id="rcPay">${PAYMENTS.map(x => `<option ${x === guess ? 'selected' : ''}>${x}</option>`).join('')}</select></label>
+        <div class="row-actions"><button class="btn" data-x>Отмена</button><button class="btn btn-accent" id="rcMake">Создать чек</button></div>`);
+      $('#rcMake').addEventListener('click', async e => {
+        e.target.disabled = true; e.target.textContent = 'Создаём…';
+        const res = await mutate('make_receipt', { number: o.number, payment: $('#rcPay').value });
+        const fresh = S.data.orders.find(x => x.number === o.number);
+        if (res && res.receipt && fresh) {
+          fresh.receipt = res.receipt;
+          // Если свежие данные с сервера ещё не пришли (идут другие сохранения) — показываем чек из заказа.
+          S.data.receipts = S.data.receipts || [];
+          if (!S.data.receipts.some(x => x.number === res.receipt)) S.data.receipts.push({ number: res.receipt, order: fresh.number, date: today() + ' ' + new Date().toLocaleTimeString('ru-RU', { timeZone: 'Asia/Almaty', hour: '2-digit', minute: '2-digit' }),
+            client: [fresh.name, fresh.surname].filter(Boolean).join(' '), phone: fresh.phone, items_text: fresh.items_text, subtotal: fresh.subtotal, discount: fresh.discount, total: fresh.total, payment: $('#rcPay').value, created: today() });
+          receiptDialog(fresh);
+        }
+        else closeDlg();
+      });
+      return;
+    }
+    openDlg(`<h2>Чек ${esc(r.number)}<button class="x" data-x>×</button></h2>${receiptHtml(r, o)}
+      <div class="row-actions">
+        ${r.phone ? '<button class="btn" id="rcWa" style="background:#25d366;border-color:#25d366;color:#0b2e17">Отправить в WhatsApp</button>' : ''}
+        <button class="btn btn-accent" id="rcPrint">Печать / PDF</button>
+      </div>`);
+    $('#rcPrint').addEventListener('click', () => printHtml('Чек ' + r.number, receiptHtml(r, o)));
+    if ($('#rcWa')) $('#rcWa').addEventListener('click', () => window.open('https://wa.me/' + r.phone + '?text=' + encodeURIComponent(receiptText(r, o)), '_blank', 'noopener'));
+  }
 
   function findProductByLabel(label) {
     label = String(label || '').trim().toLowerCase();
@@ -591,31 +788,119 @@
       if (f === 'out' && p.in_stock) return false;
       if (f === 'sale' && !p.sale_percent_raw) return false;
       if (f === 'nophoto' && p.photo) return false;
+      if (f === 'low' && !isLow(p)) return false;
       return !q || (p.brand + ' ' + p.name).toLowerCase().includes(q);
     });
-    $('#main').innerHTML = head('Товары', '<button class="btn btn-accent btn-small" id="addProduct">+ Добавить аромат</button>') + `
+    const nLow = d.products.filter(isLow).length;
+    $('#main').innerHTML = head('Товары', '<button class="btn btn-small" id="buyBtn">🛒 Список закупки</button><button class="btn btn-small" id="invBtn">Инвентаризация</button><button class="btn btn-accent btn-small" id="addProduct">+ Добавить аромат</button>') + `
       <div class="toolbar">
         <input class="input" id="prodSearch" type="search" placeholder="Поиск по названию или бренду" value="${esc(S.q.products || '')}">
-        <div class="chips">${[['', 'Все'], ['in', 'В наличии'], ['out', 'Нет в наличии'], ['sale', 'Акции'], ['nophoto', 'Без фото']].map(c => `<button class="chip ${f === c[0] ? 'active' : ''}" data-pf="${c[0]}">${c[1]}</button>`).join('')}</div>
+        <div class="chips">${[['', 'Все'], ['in', 'В наличии'], ['out', 'Нет в наличии'], ['low', 'Заканчиваются' + (nLow ? ' · ' + nLow : '')], ['sale', 'Акции'], ['nophoto', 'Без фото']].map(c => `<button class="chip ${f === c[0] ? 'active' : ''}" data-pf="${c[0]}">${c[1]}</button>`).join('')}</div>
       </div>
       <div class="panel" style="padding:4px 14px">
         ${list.map(p => `<div class="prod-row" data-id="${esc(p.id)}">
           <div class="th">${p.photo ? `<img src="${esc(p.photo)}" alt="" loading="lazy">` : esc((p.brand || '?')[0])}</div>
           <div class="nm">${esc(p.name)}<small>${esc(p.brand)} · ${esc(p.gender)}${p.sections.length ? ' · ' + esc(p.sections.join(', ')) : ''}</small></div>
           <div class="pr">${p.sale_percent ? `<span style="color:var(--accent)">−${p.sale_percent}%</span> ` : ''}${money(p.raw_price)}<small>закуп ${money(p.cost)}</small></div>
+          <div class="stk${isLow(p) ? ' low' : ''}" title="Остаток во флаконе">${p.stock == null ? '<span>учёт не ведётся</span>' : `<b>${fmtNum(p.stock)} мл</b>`}<button data-restock title="Купили ещё 50 мл">+50 мл</button></div>
           <label class="switch" title="В наличии" data-stock><input type="checkbox" ${p.in_stock ? 'checked' : ''}><span></span></label>
         </div>`).join('') || '<div class="empty">Ничего не найдено</div>'}
       </div>
-      <p class="hint">Переключатель справа — наличие. Нажмите на аромат, чтобы изменить цену, фото, описание, акцию.</p>`;
+      <p class="hint">Переключатель справа — наличие. «+50 мл» — докупили флакон. Остаток уменьшается сам при «Продано»; на нуле аромат сам станет «нет в наличии». Нажмите на аромат, чтобы изменить цену, фото, остаток, акцию.</p>`;
     $('#prodSearch').addEventListener('input', e => { S.q.products = e.target.value; const pos = e.target.selectionStart; renderProducts(); const i = $('#prodSearch'); i.focus(); i.setSelectionRange(pos, pos); });
     $$('[data-pf]').forEach(b => b.addEventListener('click', () => { S.prodFilter = b.dataset.pf; renderProducts(); }));
     $('#addProduct').addEventListener('click', () => productEditor(null));
+    $('#buyBtn').addEventListener('click', buyList);
+    $('#invBtn').addEventListener('click', inventory);
+  }
+
+  const lowLimit = () => { const v = S.data.settings.stock_low; return v === '' || v == null ? 30 : Number(v) || 0; };
+  const isLow = p => p.stock != null && p.stock <= lowLimit();
+
+  // Список закупки: что заканчивается + кого ждут клиенты + что хорошо продаётся.
+  function buyList() {
+    const d = S.data, days = Number(d.settings.buy_days) || 30, from = daysAgo(days - 1);
+    const sold = {};
+    d.sales.filter(s => s.date.slice(0, 10) >= from).forEach(s => { if (s.product_id) sold[s.product_id] = (sold[s.product_id] || 0) + s.ml; });
+    const name = p => (p.brand + ' ' + p.name).trim();
+    const step = ml => Math.max(50, Math.ceil(ml / 50) * 50);
+    const used = new Set(), wn = {};
+    (d.waitlist || []).filter(w => !w.notified && w.product_id).forEach(w => { wn[w.product_id] = (wn[w.product_id] || 0) + 1; });
+    const low = d.products.filter(isLow).sort((a, b) => a.stock - b.stock).map(p => {
+      used.add(p.id);
+      return { key: p.id, text: name(p), note: `осталось ${fmtNum(p.stock)} мл · продано ${fmtNum(sold[p.id] || 0)} мл за ${days} дн.${wn[p.id] ? ' · ждут ' + wn[p.id] + ' чел.' : ''}`, ml: step((sold[p.id] || 0) - p.stock), on: true };
+    });
+    const waitsBy = {};
+    (d.waitlist || []).filter(w => !w.notified).forEach(w => { const k = w.product_id || ('?' + w.product); waitsBy[k] = waitsBy[k] || { id: w.product_id, text: w.product, n: 0 }; waitsBy[k].n++; });
+    const waits = Object.values(waitsBy).filter(w => !used.has(w.id) && (!w.id || !(d.byId[w.id] && d.byId[w.id].in_stock))).sort((a, b) => b.n - a.n).map(w => {
+      if (w.id) used.add(w.id);
+      return { key: w.id || w.text, text: w.text, note: `ждут ${w.n} чел.${w.id ? '' : ' · нет на сайте'}`, ml: 50, on: true };
+    });
+    const top = Object.keys(sold).filter(id => d.byId[id] && !used.has(id)).sort((a, b) => sold[b] - sold[a]).slice(0, 10).map(id => {
+      const p = d.byId[id];
+      return { key: id, text: name(p), note: `продано ${fmtNum(sold[id])} мл за ${days} дн.${p.stock != null ? ' · осталось ' + fmtNum(p.stock) + ' мл' : ''}${p.in_stock ? '' : ' · нет в наличии'}`, ml: 50, on: !p.in_stock || (p.stock != null && p.stock < sold[id]) };
+    });
+    const groups = [['Заканчиваются', low], ['Ждут клиенты', waits], ['Хорошо продаются', top]];
+    const row = (g, x, i) => `<label><input type="checkbox" data-bi="${g}:${i}" ${x.on ? 'checked' : ''}><span>${esc(x.text)}<br><small class="muted">${esc(x.note)}</small></span><span class="q"><input class="input" type="number" min="50" step="50" value="${x.ml}" data-bml="${g}:${i}" style="width:80px;min-height:34px;padding:4px 8px"> мл</span></label>`;
+    openDlg(`<h2>Список закупки<button class="x" data-x>×</button></h2>
+      ${groups.some(g => g[1].length) ? groups.map((g, gi) => g[1].length ? `<div class="buy-sec"><b>${g[0]}</b>${g[1].map((x, i) => row(gi, x, i)).join('')}</div>` : '').join('')
+        : '<div class="empty">Пока нечего закупать. Заполните остатки (кнопка «Инвентаризация»), и список будет собираться сам.</div>'}
+      <p class="hint" style="margin:0">Порог «заканчивается» — ${lowLimit()} мл, продажи — за ${days} дн. (меняется в «Настройках»). Объём округляется до шага 50 мл.</p>
+      <div class="row-actions">
+        <button class="btn" id="buyCopy">Копировать</button>
+        <button class="btn" id="buyTg">В Telegram</button>
+        <button class="btn" id="buyWa" style="background:#25d366;border-color:#25d366;color:#0b2e17">В WhatsApp</button>
+      </div>`);
+    const text = () => {
+      const lines = [];
+      $$('[data-bi]').forEach(c => {
+        if (!c.checked) return;
+        const [g, i] = c.dataset.bi.split(':').map(Number);
+        lines.push('• ' + groups[g][1][i].text + ' — ' + ($(`[data-bml="${g}:${i}"]`).value || 50) + ' мл');
+      });
+      return lines.length ? '🛒 Закупка SMELL PARFUME — ' + ruDate(today()) + '\n\n' + lines.join('\n') : '';
+    };
+    const need = () => { const t = text(); if (!t) toast('Отметьте хотя бы один аромат', true); return t; };
+    $('#buyWa').addEventListener('click', () => { const t = need(); if (t) window.open('https://wa.me/?text=' + encodeURIComponent(t), '_blank', 'noopener'); });
+    $('#buyCopy').addEventListener('click', async () => { const t = need(); if (!t) return; try { await navigator.clipboard.writeText(t); toast('Скопировано'); } catch (e) { toast('Не удалось скопировать', true); } });
+    $('#buyTg').addEventListener('click', async e => { const t = need(); if (t) await run(e.target, () => api('send_tg', { text: t }), 'Отправлено в Telegram'); });
+  }
+
+  // Инвентаризация: все остатки на одной странице, сохраняются одним запросом.
+  function inventory() {
+    const list = S.data.products.slice().sort((a, b) => (a.brand + a.name).localeCompare(b.brand + b.name));
+    openDlg(`<h2>Инвентаризация<button class="x" data-x>×</button></h2>
+      <p class="muted" style="margin:0">Впишите, сколько мл осталось в каждом флаконе. Пустое поле — остаток по аромату не считается. 0 — аромат станет «нет в наличии».</p>
+      <input class="input" id="invSearch" type="search" placeholder="Найти аромат">
+      <div id="invList" style="display:grid;gap:2px">${list.map(p => `<label class="buy-sec" data-inv="${esc(p.id)}" style="display:block"><label style="border:0"><span>${esc(p.brand + ' ' + p.name)}${p.in_stock ? '' : ' <small class="muted">· нет в наличии</small>'}</span><span class="q"><input class="input" type="number" min="0" step="1" value="${p.stock == null ? '' : p.stock}" data-old="${p.stock == null ? '' : p.stock}" style="width:90px;min-height:36px;padding:4px 8px"> мл</span></label></label>`).join('')}</div>
+      <div class="row-actions"><button class="btn" data-x>Отмена</button><button class="btn btn-accent" id="invSave">Сохранить остатки</button></div>`);
+    $('#invSearch').addEventListener('input', e => { const q = e.target.value.toLowerCase(); $$('[data-inv]').forEach(r => { r.style.display = r.textContent.toLowerCase().includes(q) ? '' : 'none'; }); });
+    $('#invSave').addEventListener('click', () => {
+      const items = $$('[data-inv]').map(r => { const i = $('input', r); return i.value === i.dataset.old ? null : { id: r.dataset.inv, stock: i.value === '' ? '' : Number(i.value) }; }).filter(Boolean);
+      if (!items.length) return closeDlg();
+      items.forEach(it => {
+        const p = S.data.byId[it.id], was = p.stock;
+        p.stock = it.stock === '' ? null : it.stock;
+        if (p.stock !== null && p.stock <= 0) p.in_stock = false;
+        else if (p.stock > 0 && was != null && was <= 0) p.in_stock = true;
+      });
+      mutate('stock_bulk', { items: items }, 'Остатки сохранены: ' + items.length);
+      closeDlg(); render();
+    });
   }
 
   async function onProductClick(e) {
     if (S.tab !== 'products') return;
     const row = e.target.closest('.prod-row'); if (!row) return;
     const p = S.data.byId[row.dataset.id];
+    if (e.target.closest('[data-restock]')) {
+      const was = p.stock;
+      p.stock = Math.round(((was || 0) + 50) * 10) / 10;
+      if (was != null && was <= 0) p.in_stock = true;
+      render();
+      mutate('restock', { id: p.id, ml: 50 }, `${p.name}: +50 мл, остаток ${fmtNum(p.stock)} мл`);
+      return;
+    }
     const sw = e.target.closest('[data-stock]');
     if (sw) {
       if (e.target.tagName !== 'INPUT') return;
@@ -634,7 +919,7 @@
 
   function productEditor(p) {
     const isNew = !p;
-    p = p || { brand: '', name: '', gender: 'Унисекс', raw_price: '', cost: '', in_stock: true, sections: [], sale_percent_raw: '', sale_until_raw: '', photo: '', description: '', notes: '' };
+    p = p || { brand: '', name: '', gender: 'Унисекс', raw_price: '', cost: '', in_stock: true, stock: null, sections: [], sale_percent_raw: '', sale_until_raw: '', photo: '', description: '', notes: '' };
     const sections = S.data.sections.map(s => s.name);
     openDlg(`<h2>${isNew ? 'Новый аромат' : esc(p.name)}<button class="x" data-x>×</button></h2>
       <div class="photo-box">
@@ -654,7 +939,10 @@
         <label class="field"><span>Закуп за 1 мл, ₸</span><input class="input" type="number" min="0" name="cost" value="${p.cost}"></label>
         <label class="field"><span>Для кого</span><select class="select" name="gender">${['Женский', 'Мужской', 'Унисекс'].map(g => `<option ${g === p.gender ? 'selected' : ''}>${g}</option>`).join('')}</select></label>
       </div>
-      <label class="check"><input type="checkbox" name="in_stock" ${p.in_stock ? 'checked' : ''}> В наличии</label>
+      <div class="grid2" style="align-items:end">
+        <label class="field"><span>Остаток во флаконе, мл</span><input class="input" type="number" min="0" step="1" name="stock" value="${p.stock == null ? '' : p.stock}" placeholder="не считать"><small class="hint">Пусто — не считать. Уменьшается сам при «Продано»</small></label>
+        <label class="check" style="padding-bottom:22px"><input type="checkbox" name="in_stock" ${p.in_stock ? 'checked' : ''}> В наличии</label>
+      </div>
       <div class="field"><span>Разделы</span><div class="chips">${sections.map(s => `<label class="chip"><input type="checkbox" name="sec" value="${esc(s)}" ${p.sections.includes(s) ? 'checked' : ''} style="margin-right:6px;accent-color:var(--accent)">${esc(s)}</label>`).join('') || '<span class="hint">Разделы создаются в «Настройках»</span>'}</div></div>
       <div class="grid2">
         <label class="field"><span>Скидка, %</span><input class="input" type="number" min="0" max="90" name="sale_percent" value="${p.sale_percent_raw || ''}" placeholder="нет"></label>
@@ -690,14 +978,17 @@
         id: isNew ? '' : p.id, brand: g('brand').value, name: g('name').value, gender: g('gender').value,
         price: Number(g('price').value || 0), cost: Number(g('cost').value || 0), in_stock: g('in_stock').checked,
         sections: $$('[name=sec]:checked', box).map(x => x.value), sale_percent: Number(g('sale_percent').value || 0),
-        sale_until: g('sale_until').value, photo: g('photo').value.trim(), description: g('description').value, notes: g('notes').value
+        sale_until: g('sale_until').value, photo: g('photo').value.trim(), description: g('description').value, notes: g('notes').value,
+        stock: g('stock').value === '' ? '' : Number(g('stock').value)
       };
+      if (payload.stock !== '' && payload.stock <= 0) payload.in_stock = false;
       if (!payload.name.trim()) return toast('Укажите название', true);
       if (!payload.price) return toast('Укажите цену за мл', true);
       const local = {
         brand: payload.brand, name: payload.name, gender: payload.gender, raw_price: payload.price, price: payload.price, cost: payload.cost,
         in_stock: payload.in_stock, sections: payload.sections, sale_percent_raw: payload.sale_percent, sale_until_raw: payload.sale_until,
-        sale_percent: payload.sale_percent, photo: payload.photo, description: payload.description, notes: payload.notes
+        sale_percent: payload.sale_percent, photo: payload.photo, description: payload.description, notes: payload.notes,
+        stock: payload.stock === '' ? null : payload.stock
       };
       if (isNew) S.data.products.push(Object.assign({ id: 'new-' + Date.now() }, local));
       else Object.assign(p, local);
@@ -747,6 +1038,7 @@
       if (f === 'sleep' && !(c.nOrders > 0 && c.last.slice(0, 10) < old)) return false;
       if (f === 'none' && c.nOrders > 0) return false;
       if (f === 'vip' && c.spent < 50000) return false;
+      if (f === 'bday' && !bdayIn(c.birthday, 30)) return false;
       if (q && !(c.name + ' ' + c.surname + ' ' + c.phone + ' ' + Object.keys(c.products).join(' ')).toLowerCase().includes(q)) return false;
       return true;
     });
@@ -754,12 +1046,12 @@
     $('#main').innerHTML = head('Клиенты', '<button class="btn btn-accent btn-small" id="addClient">+ Клиент</button>') + `
       <div class="toolbar">
         <input class="input" id="clientSearch" type="search" placeholder="Имя, телефон или аромат" value="${esc(S.q.clients || '')}">
-        <div class="chips">${[['', 'Все'], ['repeat', 'Постоянные (2+)'], ['vip', 'Потратили 50 000+'], ['sleep', 'Давно не заказывали'], ['none', 'Без покупок']].map(c => `<button class="chip ${f === c[0] ? 'active' : ''}" data-cf="${c[0]}">${c[1]}</button>`).join('')}</div>
+        <div class="chips">${[['', 'Все'], ['repeat', 'Постоянные (2+)'], ['vip', 'Потратили 50 000+'], ['sleep', 'Давно не заказывали'], ['none', 'Без покупок'], ['bday', '🎂 ДР в ближайший месяц']].map(c => `<button class="chip ${f === c[0] ? 'active' : ''}" data-cf="${c[0]}">${c[1]}</button>`).join('')}</div>
         ${f === 'sleep' ? `<label class="muted">больше <input class="input" id="clientDays" type="number" min="1" value="${S.q.clientDays || 30}" style="width:70px;min-height:36px;display:inline-block"> дней</label>` : ''}
       </div>
       <div class="panel" style="padding:6px 14px"><div class="tbl-wrap"><table>
         <thead><tr><th>Клиент</th><th>Телефон</th><th class="r">Заказов</th><th class="r">Потратил</th><th class="r">Последний</th></tr></thead>
-        <tbody>${list.map(c => `<tr class="click" data-phone="${c.phone}"><td>${esc((c.name + ' ' + c.surname).trim() || '—')}</td><td>${phoneFmt(c.phone)}</td><td class="r">${c.nOrders}</td><td class="r">${money(c.spent)}</td><td class="r">${c.last ? ruDate(c.last.slice(0, 10)) : '—'}</td></tr>`).join('') || '<tr><td colspan="5" class="empty">Клиентов пока нет — они появятся после первых заказов с сайта</td></tr>'}</tbody>
+        <tbody>${list.map(c => `<tr class="click" data-phone="${c.phone}"><td>${esc((c.name + ' ' + c.surname).trim() || '—')}${bdayIn(c.birthday, 7) ? ' 🎂' : ''}</td><td>${phoneFmt(c.phone)}</td><td class="r">${c.nOrders}</td><td class="r">${money(c.spent)}</td><td class="r">${c.last ? ruDate(c.last.slice(0, 10)) : '—'}</td></tr>`).join('') || '<tr><td colspan="5" class="empty">Клиентов пока нет — они появятся после первых заказов с сайта</td></tr>'}</tbody>
       </table></div></div>
       ${f === 'sleep' && list.length ? '<p class="hint">Совет: откройте клиента и нажмите «Выдать промокод» — откроется WhatsApp с готовым сообщением.</p>' : ''}`;
     $('#clientSearch').addEventListener('input', e => { S.q.clients = e.target.value; const pos = e.target.selectionStart; renderClients(); const i = $('#clientSearch'); i.focus(); i.setSelectionRange(pos, pos); });
@@ -768,6 +1060,20 @@
     $('#addClient').addEventListener('click', () => clientCard(null));
     $$('tr[data-phone]').forEach(tr => tr.addEventListener('click', () => clientCard(clientRows().find(c => c.phone === tr.dataset.phone))));
   }
+
+  // День рождения «ДД.ММ» или «ДД.ММ.ГГГГ»: через сколько дней (0 — сегодня), null — не указан.
+  function bdayLeft(b) {
+    const m = /^(\d{2})\.(\d{2})/.exec(b || ''); if (!m) return null;
+    for (let i = 0; i <= 366; i++) { const t = daysAgo(-i); if (t.slice(8, 10) === m[1] && t.slice(5, 7) === m[2]) return i; }
+    return null;
+  }
+  const bdayIn = (b, days) => { const n = bdayLeft(b); return n !== null && n <= days; };
+  const normBday = v => {
+    v = String(v || '').trim(); if (!v) return '';
+    const m = /^(\d{1,2})[.\/-](\d{1,2})(?:[.\/-](\d{4}))?$/.exec(v);
+    if (!m || +m[1] < 1 || +m[1] > 31 || +m[2] < 1 || +m[2] > 12) return null;
+    return ('0' + m[1]).slice(-2) + '.' + ('0' + m[2]).slice(-2) + (m[3] ? '.' + m[3] : '');
+  };
 
   // ───────── Напоминания: отзыв и повторная покупка ─────────
   const aromaSum = items => (items || []).filter(it => !it.gift).reduce((a, it) => a + lineSum(it), 0);
@@ -798,7 +1104,10 @@
       const p = d.promos.find(x => x.code === o.ref_bonus), c = p && clients[p.phone];
       return p ? { order: o, code: p.code, value: p.value, phone: p.phone, name: c ? c.name : '', surname: c ? c.surname : '' } : null;
     }).filter(Boolean);
-    return { review: review, repeat: repeat, stock: stock, wish: wish, waitingOut: waitingOut, bonus: bonus };
+    const bd = s.bday_days === '' || s.bday_days == null ? 3 : Number(s.bday_days) || 0;
+    const bday = d.clients.filter(c => bdayIn(c.birthday, bd) && !(c.bday_sent && c.bday_sent >= daysAgo(60)))
+      .sort((a, b) => bdayLeft(a.birthday) - bdayLeft(b.birthday));
+    return { review: review, repeat: repeat, stock: stock, wish: wish, waitingOut: waitingOut, bonus: bonus, bday: bday };
   }
   const aromasOf = o => [...new Set((o.items || []).filter(it => !it.gift).map(it => it.name))].join(', ') || 'аромат';
   // Подставляем {имя} {аромат} {ссылка} {скидка}; без имени «Здравствуйте, {имя}!» превращается в «Здравствуйте!»
@@ -820,6 +1129,7 @@
   const DEF_NOTIFY = 'Здравствуйте, {имя}! Это SMELL PARFUME 🌿 {аромат} снова в наличии 🎉 Вы просили сообщить. Заказать можно здесь: {ссылка}';
   const DEF_WISH = 'Здравствуйте, {имя}! Это SMELL PARFUME 🌿 Вы спрашивали про {аромат}. ';
   const DEF_REF = 'Здравствуйте, {имя}! Это SMELL PARFUME 🌿 Ваш друг сделал заказ по вашему коду — спасибо! 🎁 Дарим вам скидку {скидка} на следующий заказ: промокод {код} (действует 6 месяцев). Каталог: https://smellparfume.github.io';
+  const DEF_BDAY = 'Здравствуйте, {имя}! SMELL PARFUME поздравляет вас с днём рождения 🎉🖤 Дарим скидку {скидка} на любой аромат — промокод {код}, действует 14 дней. Каталог: https://smellparfume.github.io';
   const WA_BTN = '<button class="btn btn-small wa-like" data-rsend style="background:#25d366;border-color:#25d366;color:#0b2e17">Написать в WhatsApp</button><button class="btn btn-small" data-rskip>Уже написал / пропустить</button>';
 
   function renderRemind() {
@@ -842,6 +1152,9 @@
       </div>`;
     $('#main').innerHTML = head('Напомнить') + `
       <p class="hint" style="margin-top:-8px">Кнопка откроет WhatsApp с готовым текстом — останется нажать «Отправить». Клиент сразу уйдёт из списка. Тексты и сроки — в «Настройках».</p>
+      ${rc.bday.length ? `<div class="panel"><h2>🎂 День рождения <small>поздравить и подарить скидку ${Number(s.bday_percent) || 10}% — промокод создастся сам</small></h2>${rc.bday.map(c => `<div class="order" data-bphone="${esc(c.phone)}" data-rkind="bday">
+        <div class="top"><b>${esc([c.name, c.surname].filter(Boolean).join(' ') || 'Без имени')}</b><span class="muted">${phoneFmt(c.phone)}</span><span class="muted" style="margin-left:auto">${esc(c.birthday)} · ${bdayLeft(c.birthday) === 0 ? '<b style="color:var(--accent)">сегодня</b>' : 'через ' + bdayLeft(c.birthday) + ' дн.'}</span></div>
+        <div class="actions">${WA_BTN}</div></div>`).join('')}</div>` : ''}
       ${rc.stock.length ? `<div class="panel"><h2>Аромат снова в наличии <small>эти клиенты просили сообщить</small></h2>${rc.stock.map(stockRow).join('')}</div>` : ''}
       ${rc.wish.length ? `<div class="panel"><h2>Ищут ароматы, которых нет на сайте <small>заявки «Не нашли свой аромат?» — подскажут, что закупить</small></h2>${rc.wish.map(wishRow).join('')}</div>` : ''}
       ${rc.bonus.length ? `<div class="panel"><h2>Бонус за друга <small>друг купил по их коду — бонус уже создан</small></h2>${rc.bonus.map(bonusRow).join('')}</div>` : ''}
@@ -857,6 +1170,20 @@
       const D = S.data, st = D.settings, kind = card.dataset.rkind, send = !!e.target.closest('[data-rsend]');
       const now = today() + ' ' + new Date().toLocaleTimeString('ru-RU', { timeZone: 'Asia/Almaty', hour: '2-digit', minute: '2-digit' });
       const wa = (phone, text) => window.open('https://wa.me/' + phone + '?text=' + encodeURIComponent(text), '_blank', 'noopener');
+      if (kind === 'bday') {
+        const c = D.clients.find(x => x.phone === card.dataset.bphone); if (!c) return;
+        if (send) {
+          const pct = Number(st.bday_percent) || 10;
+          const code = 'BDAY' + (translit(c.name || '').toUpperCase().replace(/[^A-Z]/g, '').slice(0, 5)) + '-' + Math.random().toString(36).slice(2, 6).toUpperCase();
+          const promo = { code: code, type: '%', value: pct, until: daysAgo(-14), limit: 1, used: 0, phone: c.phone, active: true, comment: 'день рождения ' + (c.name || '') };
+          D.promos.push(promo);
+          mutate('save_promo', { promo: promo });
+          wa(c.phone, fillText(st.bday_text || DEF_BDAY, { name: c.name, items: [] }, { code: code, loy: pct + '%' }));
+        }
+        c.bday_sent = today();
+        mutate('mark_bday', { phone: c.phone });
+        return render();
+      }
       if (kind === 'stock') {
         const ph = card.dataset.wphone, pid = card.dataset.wpid, list = (D.waitlist || []).filter(w => w.phone === ph && w.product_id === pid && !w.notified);
         if (!list.length) return;
@@ -902,15 +1229,16 @@
     const promos = isNew ? [] : S.data.promos.filter(p => p.phone === c.phone || p.ref_owner === c.phone)
       .map(p => p.ref_owner ? Object.assign({}, p, { type: '%', value: Number(S.data.settings.ref_percent) || 0, label: 'код для друзей · привёл ' + p.used }) : p);
     openDlg(`<h2>${isNew ? 'Новый клиент' : esc((c.name + ' ' + c.surname).trim() || phoneFmt(c.phone))}<button class="x" data-x>×</button></h2>
-      ${isNew ? '' : `<div class="stat-line"><span>Заказов: <b>${c.nOrders}</b></span><span>Потратил: <b>${money(c.spent)}</b></span><span>Последний: <b>${c.last ? ruDate(c.last.slice(0, 10)) : '—'}</b></span><span>С нами с: <b>${ruDate((c.created || '').slice(0, 10)) || '—'}</b></span></div>`}
-      <div class="grid3">
+      ${isNew ? '' : `<div class="stat-line"><span>Заказов: <b>${c.nOrders}</b></span><span>Потратил: <b>${money(c.spent)}</b></span><span>Средний чек: <b>${money(c.nOrders ? c.spent / c.nOrders : 0)}</b></span><span>Всего: <b>${fmtNum(Object.values(c.products).reduce((a, x) => a + x, 0))} мл</b></span><span>Последний: <b>${c.last ? ruDate(c.last.slice(0, 10)) + ' (' + Math.round((Date.parse(today()) - Date.parse(c.last.slice(0, 10))) / 864e5) + ' дн. назад)' : '—'}</b></span><span>С нами с: <b>${ruDate((c.created || '').slice(0, 10)) || '—'}</b></span>${c.birthday ? `<span>🎂 <b>${esc(c.birthday)}</b>${bdayLeft(c.birthday) !== null && bdayLeft(c.birthday) <= 30 ? ' (через ' + bdayLeft(c.birthday) + ' дн.)' : ''}</span>` : ''}</div>`}
+      <div class="grid2">
         <label class="field"><span>Телефон *</span><input class="input" name="phone" value="${esc(phoneFmt(c.phone))}" inputmode="tel"></label>
+        <label class="field"><span>День рождения</span><input class="input" name="birthday" value="${esc(c.birthday || '')}" placeholder="ДД.ММ или ДД.ММ.ГГГГ" inputmode="numeric"></label>
         <label class="field"><span>Имя</span><input class="input" name="name" value="${esc(c.name)}"></label>
         <label class="field"><span>Фамилия</span><input class="input" name="surname" value="${esc(c.surname)}"></label>
       </div>
-      <label class="field"><span>Заметки</span><textarea class="textarea" name="notes" placeholder="Предпочтения, день рождения, что понравилось…">${esc(c.notes)}</textarea></label>
+      <label class="field"><span>Заметки</span><textarea class="textarea" name="notes" placeholder="Предпочтения, что понравилось…">${esc(c.notes)}</textarea></label>
       ${fav.length ? `<div class="field"><span>Любимые ароматы</span><div class="chips">${fav.map(f => `<span class="chip" style="pointer-events:none">${esc(f[0])} · ${fmtNum(f[1])} мл</span>`).join('')}</div></div>` : ''}
-      ${orders.length ? `<div class="field"><span>История заказов</span><div class="tbl-wrap"><table><tbody>${orders.map(o => `<tr><td>№ ${esc(o.number)}<br><small class="muted">${ruDate(o.date)}</small></td><td style="font-size:12px" class="muted">${esc(o.items.map(i => i.name + ' ' + fmtNum(i.ml) + ' мл').join(', '))}</td><td class="r">${money(o.total)}<br><span class="status ${STATUS_CLS[o.status] || ''}">${esc(o.status)}</span></td></tr>`).join('')}</tbody></table></div></div>` : ''}
+      ${orders.length ? `<div class="field"><span>История заказов</span><div class="tbl-wrap"><table><tbody>${orders.map(o => `<tr><td>№ ${esc(o.number)}<br><small class="muted">${ruDate(o.date)}</small></td><td style="font-size:12px" class="muted">${esc(o.items.map(i => i.gift ? i.name : i.name + ' ' + fmtNum(i.ml) + ' мл').join(', '))}${o.discount ? '<br>скидка −' + money(o.discount) + (o.promo ? ' (' + esc(o.promo) + ')' : '') : ''}${o.receipt ? '<br>чек ' + esc(o.receipt) : ''}</td><td class="r">${money(o.total)}<br><span class="status ${STATUS_CLS[o.status] || ''}">${esc(o.status)}</span>${o.paid ? '<br><small style="color:var(--ok)">оплачен</small>' : ''}</td></tr>`).join('')}</tbody></table></div></div>` : ''}
       ${promos.length ? `<div class="field"><span>Промокоды клиента</span><div class="chips">${promos.map(p => `<span class="chip" style="pointer-events:none">${esc(p.code)} · ${p.type === '%' ? p.value + '%' : money(p.value)}${p.label ? ' · ' + p.label : p.used ? ' · использован' : ''}</span>`).join('')}</div></div>` : ''}
       ${isNew ? '' : `<div class="panel" style="margin:0;display:grid;gap:10px">
         <b>Выдать промокод</b>
@@ -932,7 +1260,9 @@
       const phone = normPhone(g('phone').value);
       if (!phone) return toast('Проверьте телефон', true);
       if (S.data.clients.some(x => x.phone === phone && x.phone !== c.phone)) return toast('Клиент с таким номером уже есть', true);
-      const client = { phone: phone, name: g('name').value.trim(), surname: g('surname').value.trim(), notes: g('notes').value };
+      const birthday = normBday(g('birthday').value);
+      if (birthday === null) return toast('День рождения: ДД.ММ или ДД.ММ.ГГГГ', true);
+      const client = { phone: phone, name: g('name').value.trim(), surname: g('surname').value.trim(), notes: g('notes').value, birthday: birthday };
       const existing = !isNew && S.data.clients.find(x => x.phone === c.phone);
       if (existing) Object.assign(existing, client);
       else S.data.clients.push(Object.assign({ created: new Date().toISOString().slice(0, 16).replace('T', ' '), source: 'вручную' }, client));
@@ -1090,6 +1420,16 @@
           ${F('ref_bonus_percent', 'Бонус тому, кто привёл, %', 'text', 'Личный промокод на один заказ, действует 6 месяцев')}
           ${F('ref_min', 'Бонус, если друг купил ароматов от, ₸', 'text', 'Бонус создаётся, когда заказ друга отмечен «Продано»')}
           ${F('ref_text', 'Текст сообщения о бонусе', 'textarea', 'Подставятся сами: {имя} {код} {скидка}')}
+          ${F('bday_days', 'Напоминать о дне рождения за, дней', 'text', 'Пусто — за 3 дня. Список — во вкладке «Напомнить»')}
+          ${F('bday_percent', 'Скидка в день рождения, %', 'text', 'Пусто — 10%. Промокод создаётся сам на 14 дней')}
+          ${F('bday_text', 'Поздравление с днём рождения', 'textarea', 'Подставятся сами: {имя} {скидка} {код}')}
+          <h2 class="full" style="margin:10px 0 0">Сообщения по заказу</h2>
+          ${F('wa_ready_text', '«Заказ собран»', 'textarea', 'Подставятся сами: {имя} {номер} {аромат} {сумма}')}
+          ${F('wa_courier_text', '«Курьер выехал»', 'textarea', 'Подставятся сами: {имя} {номер} {сумма}')}
+          ${F('wa_paid_text', '«Оплата получена»', 'textarea', 'Подставятся сами: {имя} {номер} {сумма}')}
+          <h2 class="full" style="margin:10px 0 0">Остатки и закупка</h2>
+          ${F('stock_low', 'Аромат «заканчивается», когда осталось меньше, мл', 'text', 'Пусто — 30 мл. Такие ароматы попадут в список закупки и в отчёт в Telegram')}
+          ${F('buy_days', 'Список закупки: считать продажи за, дней', 'text', 'Пусто — 30')}
           <h2 class="full" style="margin:10px 0 0">Хиты</h2>
           ${F('hits_count', 'Сколько ароматов отмечать «🔥 Хит»', 'text', 'Самые продаваемые по заказам «Продано» (нужно хотя бы 2 заказа). 0 — выключить')}
           ${F('hits_days', 'Считать продажи за последние, дней')}
@@ -1115,6 +1455,10 @@
         <div class="faq-edit list-edit" id="revList">${(d.reviews || []).map(revRow).join('')}</div>
         <div class="row-actions"><button class="btn btn-small" id="addRev" style="margin-right:auto">+ Отзыв</button><button class="btn btn-accent btn-small" id="saveRev">Сохранить отзывы</button></div>
         <p class="hint">Публикуйте только настоящие отзывы и с согласия автора. Фото — ссылка на картинку (например, скриншот, загруженный на Google Диск).</p>
+      </div>
+      <div class="panel"><h2>Звук новых заказов</h2>
+        <label class="check"><input type="checkbox" id="soundOn" ${ls.get('mute') === '1' ? '' : 'checked'}> Звук и уведомление, когда приходит новый заказ (пока админка открыта)</label>
+        <p class="hint">Проверка — раз в минуту. Браузер разрешает звук после первого нажатия в админке. <button class="btn btn-small" id="testBeep" type="button">Проверить звук</button></p>
       </div>
       <div class="panel"><h2>Смена пароля</h2>
         <div class="grid3">
@@ -1198,6 +1542,121 @@
       }, 'Пароль изменён');
     });
     $('#logout2').addEventListener('click', () => logout());
+    $('#soundOn').addEventListener('change', e => { ls.set('mute', e.target.checked ? null : '1'); toast(e.target.checked ? 'Звук включён' : 'Звук выключен'); });
+    $('#testBeep').addEventListener('click', () => setTimeout(beep, 50));
+  }
+
+  // ───────── Финансы: расходы, отчёт за месяц, чеки ─────────
+  const EXP_CATS = ['Реклама', 'Флаконы и атомайзеры', 'Закуп ароматов', 'Коробки и упаковка', 'Доставка', 'Прочее'];
+  function monthData(m) {
+    const d = S.data, inM = x => (x || '').slice(0, 7) === m;
+    const sales = d.sales.filter(s => inM(s.date));
+    const revenue = sales.reduce((a, s) => a + s.revenue, 0), profit = sales.reduce((a, s) => a + s.profit, 0), ml = sales.reduce((a, s) => a + s.ml, 0);
+    const nOrders = new Set(sales.map(s => s.order + '|' + s.date.slice(0, 10))).size;
+    const expenses = (d.expenses || []).filter(e => inM(e.date)).sort((a, b) => b.date.localeCompare(a.date));
+    const spent = expenses.reduce((a, e) => a + e.amount, 0);
+    const byCat = {};
+    expenses.forEach(e => { byCat[e.category] = (byCat[e.category] || 0) + e.amount; });
+    const top = {};
+    sales.forEach(s => { const t = top[s.product_id || s.product] = top[s.product_id || s.product] || { name: s.product, ml: 0, r: 0, p: 0 }; t.ml += s.ml; t.r += s.revenue; t.p += s.profit; });
+    const orders = d.orders.filter(o => inM(o.date) && o.status === 'Продано').sort((a, b) => a.date.localeCompare(b.date));
+    const newClients = d.clients.filter(c => inM(c.created)).length;
+    const receipts = (d.receipts || []).filter(r => inM(r.date)).sort((a, b) => b.number.localeCompare(a.number));
+    return { revenue, profit, ml, nOrders, expenses, spent, byCat, top: Object.values(top).sort((a, b) => b.r - a.r), orders, newClients, receipts };
+  }
+  const monthName = m => new Date(m + '-15T12:00:00').toLocaleDateString('ru-RU', { month: 'long', year: 'numeric' });
+
+  function renderMoney() {
+    const m = S.month || (S.month = today().slice(0, 7)), x = monthData(m);
+    $('#main').innerHTML = head('Финансы', `<input class="input" type="month" id="monthPick" value="${m}" style="width:auto;min-height:36px">`) + `
+      <div class="kpis">
+        <div class="kpi"><span>Выручка</span><b>${money(x.revenue)}</b><small>${x.nOrders} продаж · ${fmtNum(x.ml)} мл</small></div>
+        <div class="kpi"><span>Прибыль с продаж</span><b>${money(x.profit)}</b><small>выручка минус закуп</small></div>
+        <div class="kpi"><span>Расходы</span><b>${money(x.spent)}</b><small>${x.expenses.length} записей</small></div>
+        <div class="kpi"><span>Чистая прибыль</span><b style="color:${x.profit - x.spent < 0 ? 'var(--danger)' : 'var(--ok)'}">${money(x.profit - x.spent)}</b><small>прибыль минус расходы</small></div>
+      </div>
+      <div class="panel"><h2>Отчёт за ${monthName(m)}</h2>
+        <div class="toolbar" style="margin:0"><button class="btn btn-accent btn-small" id="repPrint">🖨 Печать / PDF</button><button class="btn btn-small" id="repCsv">⬇ Скачать для Excel</button></div>
+        <p class="hint" style="margin-bottom:0">PDF: в окне печати выберите «Сохранить как PDF». Excel-файл — все продажи и расходы за месяц.</p>
+      </div>
+      <div class="panel"><h2>Добавить расход</h2>
+        <div class="exp-form">
+          <label class="field"><span>Дата</span><input class="input" type="date" id="exDate" value="${today()}"></label>
+          <label class="field"><span>На что</span><input class="input" id="exCat" list="expCats" placeholder="Реклама"><datalist id="expCats">${EXP_CATS.map(c => `<option value="${c}">`).join('')}</datalist></label>
+          <label class="field"><span>Сумма, ₸</span><input class="input" type="number" min="1" id="exAmount" inputmode="numeric"></label>
+          <label class="field wide"><span>Комментарий</span><input class="input" id="exComment" placeholder="Например: таргет Instagram"></label>
+          <button class="btn btn-accent wide" id="exAdd" style="min-height:44px">Добавить</button>
+        </div>
+        <div class="chips" style="margin-top:10px">${EXP_CATS.map(c => `<button class="chip" data-excat="${c}">${c}</button>`).join('')}</div>
+      </div>
+      <div class="cols">
+        <div class="panel"><h2>Расходы <small>${monthName(m)}</small></h2>
+          ${x.expenses.length ? `<div class="tbl-wrap"><table><tbody>${x.expenses.map(e => `<tr><td>${ruDate(e.date)}</td><td><b>${esc(e.category)}</b>${e.comment ? `<br><small class="muted">${esc(e.comment)}</small>` : ''}</td><td class="r">${money(e.amount)}</td><td class="r"><button class="icon-btn" data-exdel="${esc(e.id)}" title="Удалить">✕</button></td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">Расходов за месяц нет</div>'}
+        </div>
+        <div class="panel"><h2>По категориям</h2>
+          ${Object.keys(x.byCat).length ? `<div class="tbl-wrap"><table><tbody>${Object.entries(x.byCat).sort((a, b) => b[1] - a[1]).map(c => `<tr><td class="bar-cell"><i style="width:${Math.round(c[1] / x.spent * 100)}%"></i><span style="position:relative">${esc(c[0])}</span></td><td class="r">${money(c[1])}</td><td class="r muted">${Math.round(c[1] / x.spent * 100)}%</td></tr>`).join('')}</tbody></table></div>
+          ${x.byCat['Реклама'] && x.newClients ? `<p class="hint">Реклама: ${money(x.byCat['Реклама'])} · новых клиентов ${x.newClients} · ≈ ${money(x.byCat['Реклама'] / x.newClients)} за клиента</p>` : ''}` : '<div class="empty">—</div>'}
+        </div>
+      </div>
+      <div class="panel"><h2>Чеки <small>${monthName(m)} · хранятся в листе «Чеки»</small></h2>
+        ${x.receipts.length ? `<div class="tbl-wrap"><table><thead><tr><th>Чек</th><th>Дата</th><th>Заказ</th><th>Покупатель</th><th>Оплата</th><th class="r">Сумма</th></tr></thead><tbody>${x.receipts.map(r => `<tr class="click" data-rcpt="${esc(r.number)}"><td><b>${esc(r.number)}</b></td><td>${ruDate(r.date)}</td><td>№ ${esc(r.order)}</td><td>${esc(r.client || '—')}</td><td>${esc(r.payment)}</td><td class="r">${money(r.total)}</td></tr>`).join('')}</tbody></table></div>` : '<div class="empty">Чеков за месяц нет. Чек создаётся кнопкой «🧾 Чек» в заказе</div>'}
+      </div>`;
+    $('#monthPick').addEventListener('change', e => { if (e.target.value) { S.month = e.target.value; renderMoney(); } });
+    $$('[data-excat]').forEach(b => b.addEventListener('click', () => { $('#exCat').value = b.dataset.excat; $('#exAmount').focus(); }));
+    $('#exAdd').addEventListener('click', () => {
+      const e = { id: 'tmp' + Date.now(), date: $('#exDate').value || today(), category: $('#exCat').value.trim() || 'Прочее', amount: Number($('#exAmount').value), comment: $('#exComment').value.trim() };
+      if (!(e.amount > 0)) return toast('Укажите сумму', true);
+      S.data.expenses = S.data.expenses || [];
+      S.data.expenses.push(e);
+      mutate('save_expense', { expense: Object.assign({}, e, { id: '' }) }, 'Расход добавлен');
+      renderMoney();
+    });
+    $$('[data-exdel]').forEach(b => b.addEventListener('click', () => {
+      const id = b.dataset.exdel;
+      if (id.startsWith('tmp')) return toast('Подождите секунду — расход ещё сохраняется', true);
+      if (!confirm('Удалить расход?')) return;
+      S.data.expenses = S.data.expenses.filter(e => e.id !== id);
+      mutate('delete_expense', { id: id }, 'Удалено');
+      renderMoney();
+    }));
+    $$('tr[data-rcpt]').forEach(tr => tr.addEventListener('click', () => {
+      const r = S.data.receipts.find(x => x.number === tr.dataset.rcpt);
+      const o = S.data.orders.find(x => x.number === r.order);
+      if (o) return receiptDialog(o);
+      openDlg(`<h2>Чек ${esc(r.number)}<button class="x" data-x>×</button></h2>${receiptHtml(r, null)}<div class="row-actions"><button class="btn btn-accent" id="rcPrint">Печать / PDF</button></div>`);
+      $('#rcPrint').addEventListener('click', () => printHtml('Чек ' + r.number, receiptHtml(r, null)));
+    }));
+    $('#repPrint').addEventListener('click', () => printReport(m, x));
+    $('#repCsv').addEventListener('click', () => exportCsv(m, x));
+  }
+
+  function printReport(m, x) {
+    const row = (a, b) => `<tr><td>${a}</td><td class="r">${b}</td></tr>`;
+    printHtml('Отчёт SMELL PARFUME — ' + monthName(m), `<h1>SMELL PARFUME — отчёт за ${monthName(m)}</h1><div style="color:#666">сформирован ${ruDate(today())}</div>
+      <h2>Итоги</h2><div class="k">
+        <div>Выручка<b>${money(x.revenue)}</b></div><div>Прибыль с продаж<b>${money(x.profit)}</b></div><div>Расходы<b>${money(x.spent)}</b></div>
+        <div>Чистая прибыль<b>${money(x.profit - x.spent)}</b></div><div>Продаж<b>${x.nOrders}</b></div><div>Продано<b>${fmtNum(x.ml)} мл</b></div>
+        <div>Средний чек<b>${money(x.nOrders ? x.revenue / x.nOrders : 0)}</b></div><div>Маржа<b>${x.revenue ? Math.round(x.profit / x.revenue * 100) : 0}%</b></div><div>Новых клиентов<b>${x.newClients}</b></div></div>
+      <h2>Расходы по категориям</h2><table><tbody>${Object.entries(x.byCat).sort((a, b) => b[1] - a[1]).map(c => row(esc(c[0]), money(c[1]))).join('') || row('—', '')}</tbody></table>
+      <h2>Топ ароматов</h2><table><thead><tr><th>Аромат</th><th class="r">мл</th><th class="r">Выручка</th><th class="r">Прибыль</th></tr></thead><tbody>${x.top.slice(0, 15).map(t => `<tr><td>${esc(t.name)}</td><td class="r">${fmtNum(t.ml)}</td><td class="r">${money(t.r)}</td><td class="r">${money(t.p)}</td></tr>`).join('')}</tbody></table>
+      <h2>Продажи</h2><table><thead><tr><th>Дата</th><th>№</th><th>Покупатель</th><th class="r">Сумма</th></tr></thead><tbody>${x.orders.map(o => `<tr><td>${ruDate(o.date.slice(0, 10))}</td><td>${esc(o.number)}</td><td>${esc([o.name, o.surname].filter(Boolean).join(' ') || '—')}</td><td class="r">${money(o.total)}</td></tr>`).join('')}</tbody></table>
+      <h2>Расходы</h2><table><tbody>${x.expenses.map(e => `<tr><td>${ruDate(e.date)}</td><td>${esc(e.category)}${e.comment ? ' — ' + esc(e.comment) : ''}</td><td class="r">${money(e.amount)}</td></tr>`).join('') || row('—', '')}</tbody></table>`);
+  }
+
+  // CSV с «;» и BOM — Excel открывает двойным щелчком с русскими буквами.
+  function exportCsv(m, x) {
+    const q = v => { const t = String(v == null ? '' : v); return /[;"\n]/.test(t) ? '"' + t.replace(/"/g, '""') + '"' : t; };
+    const lines = [['Отчёт SMELL PARFUME', monthName(m)], [], ['Выручка', Math.round(x.revenue)], ['Прибыль с продаж', Math.round(x.profit)], ['Расходы', Math.round(x.spent)], ['Чистая прибыль', Math.round(x.profit - x.spent)], ['Продаж', x.nOrders], ['Продано, мл', x.ml], [],
+      ['ПРОДАЖИ'], ['Дата', 'Заказ', 'Аромат', 'мл', 'Выручка', 'Прибыль', 'Телефон']];
+    S.data.sales.filter(s => s.date.slice(0, 7) === m).sort((a, b) => a.date.localeCompare(b.date)).forEach(s => lines.push([s.date.slice(0, 16), s.order, s.product, s.ml, Math.round(s.revenue), Math.round(s.profit), s.phone]));
+    lines.push([], ['РАСХОДЫ'], ['Дата', 'Категория', 'Сумма', 'Комментарий']);
+    x.expenses.forEach(e => lines.push([e.date, e.category, e.amount, e.comment]));
+    lines.push([], ['ЧЕКИ'], ['Чек', 'Дата', 'Заказ', 'Покупатель', 'Оплата', 'Сумма']);
+    x.receipts.forEach(r => lines.push([r.number, r.date, r.order, r.client, r.payment, r.total]));
+    const blob = new Blob(['\ufeff' + lines.map(l => l.map(q).join(';')).join('\r\n')], { type: 'text/csv;charset=utf-8' });
+    const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(blob), download: 'smell-parfume-' + m + '.csv' });
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
   }
   const secRow = s => `<div class="le"><input class="input" type="text" value="${esc(s.name)}" placeholder="Название раздела"><label class="check" title="Показывать на сайте"><input type="checkbox" ${s.visible ? 'checked' : ''}>видно</label><button class="icon-btn" data-up title="Выше">↑</button><button class="icon-btn" data-down title="Ниже">↓</button><button class="icon-btn" data-del title="Удалить">✕</button></div>`;
   const setChip = id => { const p = S.data.byId[id]; return `<button class="chip" data-rmid="${esc(id)}" title="Убрать">${esc(p ? p.brand + ' ' + p.name : id)} ✕</button>`; };
