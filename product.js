@@ -3,6 +3,13 @@
   'use strict';
   const money = n => Math.round(n).toLocaleString('ru-RU').replace(/,/g, ' ') + ' ₸';
 
+  // Яндекс Метрика (номер — в config.js)
+  const mid = window.SP_CONFIG && window.SP_CONFIG.METRIKA_ID;
+  if (mid && !window.ym) {
+    (function (m, e, t, r, i, k, a) { m[i] = m[i] || function () { (m[i].a = m[i].a || []).push(arguments); }; m[i].l = 1 * new Date(); k = e.createElement(t); a = e.getElementsByTagName(t)[0]; k.async = 1; k.src = r; a.parentNode.insertBefore(k, a); })(window, document, 'script', 'https://mc.yandex.ru/metrika/tag.js', 'ym');
+    window.ym(Number(mid), 'init', { clickmap: true, trackLinks: true, accurateTrackBounce: true, webvisor: true });
+  }
+
   // Обложки
   document.querySelectorAll('[data-cover]').forEach(el => {
     const d = window.SP_COVERS && window.SP_COVERS[el.dataset.cover];
