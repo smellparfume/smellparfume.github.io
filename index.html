@@ -1558,7 +1558,7 @@
         <label class="field full"><span>Телефон *</span><input class="input" name="phone" type="tel" inputmode="tel" required autocomplete="tel" placeholder="+7 (7__) ___-__-__" value="${esc(client.phone || '')}"></label>
         <label class="field full" id="addrField" ${delivery().id === 'pickup' ? 'hidden' : ''}><span>Адрес${delivery().id === 'kz' ? ' (город, улица, дом)' : ''}</span><input class="input" name="address" autocomplete="street-address" value="${esc(client.address || '')}"></label>
         <label class="field full"><span>Комментарий</span><input class="input" name="comment" placeholder="Например: удобное время"></label>
-        <label class="field full"><span>Дата рождения <small class="muted">— необязательно, подарим скидку</small></span><input class="input" name="birthday" inputmode="numeric" placeholder="ДД.ММ" maxlength="10" value="${esc(client.birthday || '')}"></label>
+        <label class="field full"><span>Дата рождения <small class="muted">— необязательно, подарим скидку</small></span><input class="input" name="birthday" inputmode="numeric" placeholder="ДД.ММ, например 15.03" maxlength="10" value="${esc(client.birthday || '')}"></label>
         <label class="consent full"><input type="checkbox" name="consent" ${client.consent ? 'checked' : ''}><span>Согласен(на) на обработку персональных данных в соответствии с <a href="privacy.html" target="_blank">политикой конфиденциальности</a></span></label>
       </form>`;
     // Код друга из ссылки: если телефон уже известен — проверяем сразу (один раз).
@@ -1581,6 +1581,11 @@
     if (p.length > 6) out += '-' + p.slice(6, 8);
     if (p.length > 8) out += '-' + p.slice(8, 10);
     return out;
+  }
+  // Дата рождения: на телефоне цифровая клавиатура без точки — точки ставим сами (1503 → 15.03, 15031990 → 15.03.1990).
+  function formatBday(v) {
+    const d = String(v).replace(/\D/g, '').slice(0, 8);
+    return [d.slice(0, 2), d.slice(2, 4), d.slice(4)].filter(Boolean).join('.');
   }
   const phoneDigits = v => { let d = String(v).replace(/\D/g, ''); if (d.length === 11 && d[0] === '8') d = '7' + d.slice(1); return d; };
 
@@ -1627,7 +1632,8 @@
     const dv = delivery(), address = String(data.address || '').trim();
     if (dv.id !== 'pickup' && !address) return toast('Укажите адрес доставки', true);
     const birthday = String(data.birthday || '').trim();
-    if (birthday && !/^\d{1,2}[.\/-]\d{1,2}([.\/-]\d{4})?$/.test(birthday)) return toast('Дата рождения в формате ДД.ММ', true);
+    const bm = /^(\d{1,2})[.\/-](\d{1,2})([.\/-]\d{4})?$/.exec(birthday);
+    if (birthday && (!bm || +bm[1] < 1 || +bm[1] > 31 || +bm[2] < 1 || +bm[2] > 12)) return toast('Дата рождения: день и месяц, например 15.03', true);
     store.set('client', { name: data.name.trim(), surname: data.surname.trim(), phone: data.phone, address: address, birthday: birthday, consent: true });
     const dvText = dv.name + (dv.cost === null ? ' (стоимость уточним)' : dv.cost ? ' — ' + money(dv.cost) : dv.price ? ' — бесплатно' : '')
       + (dv.id !== 'pickup' ? '\nАдрес: ' + address : '')
@@ -1830,6 +1836,7 @@
     if (e.target.closest('#submitOrder')) submitOrder();
   });
   $('#drawer').addEventListener('input', e => {
+    if (e.target.name === 'birthday') { e.target.value = formatBday(e.target.value); return; }
     if (e.target.name !== 'phone') return;
     e.target.value = formatPhone(e.target.value);
     fetchLoyalty(phoneDigits(e.target.value));

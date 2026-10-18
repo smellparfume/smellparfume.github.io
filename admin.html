@@ -1356,6 +1356,8 @@
       </div>`);
     const box = $('#dlgBody');
     const g = n => box.querySelector(`[name=${n}]`);
+    // На телефоне цифровая клавиатура без точки — ставим точки сами: 1503 → 15.03, 15031990 → 15.03.1990.
+    g('birthday').addEventListener('input', e => { const d = e.target.value.replace(/\D/g, '').slice(0, 8); e.target.value = [d.slice(0, 2), d.slice(2, 4), d.slice(4)].filter(Boolean).join('.'); });
     $('#saveClient').addEventListener('click', async e => {
       const phone = normPhone(g('phone').value);
       if (!phone) return toast('Проверьте телефон', true);
