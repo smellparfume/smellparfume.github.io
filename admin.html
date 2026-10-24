@@ -251,9 +251,10 @@
   // Изменения применяются в интерфейсе сразу, а на сервер уходят в фоне.
   // Ответ сервера несёт свежие данные — подставляем их, когда завершится последняя операция.
   const sync = { pending: 0, data: null, failed: false };
-  function mutate(action, payload, okMsg) {
+  // withData=false — когда сервер ничего не досчитывает (настройки, разделы, вопросы): без пересборки всех данных быстрее.
+  function mutate(action, payload, okMsg, withData = true) {
     sync.pending++; showSync();
-    return api(action, Object.assign({ with_data: true }, payload))
+    return api(action, Object.assign({ with_data: withData }, payload))
       .then(r => { if (r.data) sync.data = r.data; if (okMsg) toast(okMsg); return r; })
       .catch(e => { sync.failed = true; toast('Не сохранилось: ' + e.message, true); })
       .finally(() => {
@@ -261,6 +262,7 @@
         if (!sync.pending) {
           if (sync.failed) reload().catch(() => {});
           else if (sync.data) applyData(sync.data);
+          else vault.set('data', JSON.stringify(S.data));
           sync.data = null; sync.failed = false;
         }
         showSync();
@@ -1589,7 +1591,7 @@
       vals.whatsapp = vals.whatsapp.replace(/\D/g, '');
       vals.instagram = vals.instagram.replace(/^@/, '');
       Object.assign(S.data.settings, vals);
-      mutate('save_settings', { settings: vals }, 'Настройки сохранены');
+      mutate('save_settings', { settings: vals }, 'Настройки сохранены', false);
     });
     const sec = $('#secList');
     $('#addSec').addEventListener('click', () => sec.insertAdjacentHTML('beforeend', secRow({ name: '', visible: true })));
@@ -1602,7 +1604,7 @@
     $('#saveSec').addEventListener('click', async e => {
       const list = $$('.le', sec).map(r => ({ name: $('input[type=text]', r).value.trim(), visible: $('input[type=checkbox]', r).checked })).filter(x => x.name);
       S.data.sections = list.map((s, i) => Object.assign({ order: i + 1 }, s));
-      mutate('save_sections', { sections: list }, 'Разделы сохранены');
+      mutate('save_sections', { sections: list }, 'Разделы сохранены', false);
     });
     const faq = $('#faqList');
     $('#addFaq').addEventListener('click', () => faq.insertAdjacentHTML('beforeend', faqRow({ q: '', a: '' })));
@@ -1610,7 +1612,7 @@
     $('#saveFaq').addEventListener('click', async e => {
       const list = $$('.fe', faq).map(r => ({ q: $('input', r).value.trim(), a: $('textarea', r).value.trim() })).filter(x => x.q);
       S.data.faq = list;
-      mutate('save_faq', { faq: list }, 'Вопросы сохранены');
+      mutate('save_faq', { faq: list }, 'Вопросы сохранены', false);
     });
     const setsBox = $('#setsList');
     $('#addSet').addEventListener('click', () => setsBox.insertAdjacentHTML('beforeend', setRow({ name: '', items: [], ml: 3, discount: 10, description: '', visible: true })));
