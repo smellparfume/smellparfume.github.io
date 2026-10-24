@@ -1482,7 +1482,7 @@
   // ───────── Настройки ─────────
   function renderSettings() {
     const d = S.data, s = d.settings;
-    const F = (k, label, type, hint) => `<label class="field ${type === 'textarea' ? 'full' : ''}"><span>${label}</span>${type === 'textarea' ? `<textarea class="textarea" name="${k}" style="min-height:140px">${esc(s[k] || '')}</textarea>` : `<input class="input" name="${k}" value="${esc(s[k] || '')}"${(() => { const m = /Пусто — ([^.(]+?)(\.|$| \()/.exec(hint || ''); return m ? ` placeholder="сейчас: ${esc(m[1].trim())}"` : ''; })()}>`}${hint ? `<small class="hint">${hint}</small>` : ''}</label>`;
+    const F = (k, label, type, hint) => `<label class="field ${type === 'textarea' ? 'full' : ''}"><span>${label}</span>${type === 'textarea' ? `<textarea class="textarea" name="${k}" style="min-height:140px">${esc(s[k] || '')}</textarea>` : `<input class="input" name="${k}"${type === 'date' ? ' type="date"' : ''} value="${esc(s[k] || '')}"${(() => { const m = /Пусто — ([^.(]+?)(\.|$| \()/.exec(hint || ''); return m ? ` placeholder="сейчас: ${esc(m[1].trim())}"` : ''; })()}>`}${hint ? `<small class="hint">${hint}</small>` : ''}</label>`;
     $('#main').innerHTML = head('Настройки') + `
       <div class="set-nav">${SET_GROUPS.map(g => `<button class="chip" data-sgo="${g[0]}">${g[1]}</button>`).join('')}</div>
       <div class="panel" id="setFormPanel"><h2 id="setTitle">Магазин</h2>
@@ -1500,6 +1500,11 @@
           <h2 class="full" style="margin:10px 0 0">Доставка по городу</h2>
           ${F('delivery_zones', 'Зоны и цены доставки', 'text', 'Через точку с запятой: Центр:800; Отдалённые районы:1000; За город:1500')}
           ${F('delivery_free_from', 'Бесплатная доставка от, ₸', 'text', 'Сумма заказа после скидки. В корзине покупатель видит, сколько осталось добавить. 0 — без бесплатной доставки')}
+          <h2 class="full" style="margin:10px 0 0">Акция на весь каталог</h2>
+          ${F('sale_all_percent', 'Скидка на все ароматы, %', 'text', 'Пусто или 0 — акции нет. Если у аромата своя скидка больше — действует она')}
+          ${F('sale_all_title', 'Надпись на сайте', 'text', 'Например: 🇰🇿 С Днём Республики!')}
+          ${F('sale_all_from', 'Начало (включительно)', 'date', 'Пусто — с сегодняшнего дня')}
+          ${F('sale_all_until', 'Конец (включительно)', 'date', 'После этого дня цены вернутся сами')}
           <h2 class="full" style="margin:10px 0 0">Пробник в подарок</h2>
           ${F('sample_from', 'Пробник в подарок при заказе от, ₸', 'text', 'Сумма ароматов в корзине (без сертификатов). Пусто — 10 000. 0 — подарок выключен')}
           ${F('sample_ml', 'Объём пробника, мл', 'text', 'Пусто — 1 мл. Покупатель сам выбирает аромат в корзине')}
@@ -1668,7 +1673,7 @@
   // Настройки разбиты на подразделы: вверху кнопки, показывается только выбранный раздел.
   const SET_GROUPS = [['shop', '🏪 Магазин и доставка'], ['promo', '🎁 Скидки и бонусы'], ['msg', '💬 Сообщения клиентам'],
     ['stock', '📦 Склад и хиты'], ['catalog', '📚 Разделы, вопросы, наборы'], ['reviews', '⭐ Отзывы'], ['system', '🔒 Копии, звук, пароль']];
-  const SET_H2 = { 'Доставка по городу': 'shop', 'Пробник в подарок': 'promo', 'Собери свой набор': 'promo', 'Постоянным клиентам': 'promo',
+  const SET_H2 = { 'Доставка по городу': 'shop', 'Акция на весь каталог': 'promo', 'Пробник в подарок': 'promo', 'Собери свой набор': 'promo', 'Постоянным клиентам': 'promo',
     'Приведи друга': 'promo', 'Напоминания': 'msg', 'День рождения': 'msg', 'Сообщения по заказу': 'msg', 'Остатки и закупка': 'stock', 'Хиты': 'stock' };
   function settingsNav() {
     let cur = 'shop';
