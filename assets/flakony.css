@@ -50,3 +50,11 @@
 
 .fl-empty { text-align: center; padding: 40px 0; color: var(--muted); }
 .fl-note { margin: 40px 0 0; padding: 16px 18px; border-left: 2px solid var(--accent); background: var(--surface); border-radius: 0 var(--radius) var(--radius) 0; color: var(--muted); font-size: 14px; max-width: 760px; }
+
+.fl-price span { font-size: 12px; color: var(--faint); }
+.fl-more { display: flex; justify-content: center; margin: 22px 0 0; }
+.fl-more .btn { min-width: 220px; }
+@media (max-width: 560px) {
+  .fl-tools select { flex: 1 1 calc(50% - 5px); min-width: 0; }
+  .fl-tools #flSort { flex-basis: 100%; }
+}
