@@ -1,0 +1,52 @@
+/* Страница «Флаконы целиком» */
+.fl-hero { position: relative; padding-bottom: 8px; }
+.fl-hero .lead { max-width: 640px; font-size: 16px; color: var(--muted); margin: 0 0 22px; }
+.steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; max-width: 820px; }
+.steps li { display: flex; align-items: center; gap: 12px; padding: 14px 16px; border: 1px solid var(--line); border-radius: var(--radius); background: var(--surface); font-size: 14px; }
+.steps b { flex: none; width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: var(--accent-ink); font-size: 14px; }
+@media (max-width: 720px) { .steps { grid-template-columns: minmax(0, 1fr); gap: 8px; } .steps li { padding: 10px 14px; } }
+
+.fl-tools { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 32px 0 10px; }
+.fl-tools input, .fl-tools select { min-height: 42px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface); padding: 0 16px; }
+.fl-tools input { flex: 1 1 240px; }
+.fl-tools select { padding-right: 12px; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chip { min-height: 42px; padding: 0 16px; border: 1px solid var(--line); border-radius: 999px; background: transparent; font-size: 13px; color: var(--muted); }
+.chip:hover { color: var(--text); border-color: var(--line-strong); }
+.chip.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.fl-count { font-size: 13px; margin: 0 0 16px; }
+
+.fl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 14px; }
+.fl { display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 16px; background: var(--surface); overflow: hidden; transition: border-color .2s, transform .2s; }
+.fl:hover { border-color: var(--line-strong); transform: translateY(-2px); }
+.fl[hidden] { display: none; }
+.fl .ph { aspect-ratio: 1; display: grid; place-items: center; overflow: hidden; background: var(--bg-2); }
+.fl .ph svg, .fl .ph img { width: 100%; height: 100%; object-fit: cover; }
+.fl-body { display: flex; flex-direction: column; gap: 6px; padding: 14px 16px 0; flex: 1; }
+.fl-body small { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); }
+.fl-body h2 { margin: 0; font-family: var(--font-display); font-weight: 500; font-size: 22px; line-height: 1.12; }
+.sizes { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.sz { min-height: 32px; padding: 0 11px; border: 1px solid var(--line); border-radius: 999px; background: transparent; font-size: 12px; color: var(--muted); }
+.sz:hover { color: var(--text); }
+.sz.on { border-color: var(--accent); color: var(--text); background: rgba(201, 169, 110, .14); }
+.fl-price { display: flex; flex-direction: column; gap: 2px; margin-top: auto; padding-top: 10px; }
+.fl-price b { font-family: var(--font-display); font-size: 28px; font-weight: 600; color: var(--accent); line-height: 1.1; }
+.fl-price a { font-size: 12px; color: var(--muted); text-decoration: underline; text-decoration-color: var(--line-strong); text-underline-offset: 3px; }
+.fl-price a:hover { color: var(--text); }
+.fl-order { margin: 14px 16px 16px; }
+.btn-gold { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn-gold:hover { background: #d6b87f; border-color: #d6b87f; color: var(--accent-ink); }
+
+/* Телефон: карточка строкой — картинка слева, без пустот */
+@media (max-width: 560px) {
+  .fl-grid { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .fl { display: grid; grid-template-columns: 116px minmax(0, 1fr); grid-template-areas: "ph body" "btn btn"; }
+  .fl .ph { grid-area: ph; align-self: start; margin: 12px 0 0 12px; border-radius: 12px; }
+  .fl-body { grid-area: body; padding: 12px 12px 0 14px; }
+  .fl-body h2 { font-size: 20px; }
+  .fl-price b { font-size: 24px; }
+  .fl-order { grid-area: btn; margin: 12px; }
+}
+
+.fl-empty { text-align: center; padding: 40px 0; color: var(--muted); }
+.fl-note { margin: 40px 0 0; padding: 16px 18px; border-left: 2px solid var(--accent); background: var(--surface); border-radius: 0 var(--radius) var(--radius) 0; color: var(--muted); font-size: 14px; max-width: 760px; }
